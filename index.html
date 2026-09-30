@@ -36,7 +36,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Outer Container Frame matching the reference design */
+    /* Outer Container Frame */
     .outer-frame {
       width: 100%;
       max-width: 1080px;
@@ -108,7 +108,7 @@
       justify-content: center;
       cursor: pointer;
       z-index: 10;
-      transition: transform 0.2s ease, opacity 0.2s;
+      transition: transform 0.2s ease, background 0.2s ease;
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
@@ -131,6 +131,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      perspective: 1200px;
     }
 
     .project-card {
@@ -146,30 +147,35 @@
       align-items: center;
       box-shadow: 0 15px 35px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.03);
       border: 1px solid rgba(0,0,0,0.05);
-      transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+      
+      /* Card Transition Animation */
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                  opacity 0.4s ease, 
+                  filter 0.4s ease;
+      
       opacity: 0;
       pointer-events: none;
-      transform: scale(0.9) translateX(0);
+      transform: scale(0.85) translateY(20px) rotateY(10deg);
     }
 
     .project-card.active {
       opacity: 1;
       pointer-events: auto;
-      transform: scale(1) translateX(0);
+      transform: scale(1) translateY(0) rotateY(0deg);
       z-index: 3;
     }
 
     .project-card.prev-card {
-      opacity: 0.3;
-      transform: scale(0.88) translateX(-120px);
-      filter: blur(1px);
+      opacity: 0.25;
+      transform: scale(0.88) translateX(-140px) rotateY(8deg);
+      filter: blur(2px);
       z-index: 1;
     }
 
     .project-card.next-card {
-      opacity: 0.3;
-      transform: scale(0.88) translateX(120px);
-      filter: blur(1px);
+      opacity: 0.25;
+      transform: scale(0.88) translateX(140px) rotateY(-8deg);
+      filter: blur(2px);
       z-index: 1;
     }
 
@@ -192,24 +198,24 @@
       inset: 0;
       background-size: cover;
       background-position: center;
-      transition: transform 0.6s ease;
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .project-card:hover .card-visual-bg {
-      transform: scale(1.05);
+      transform: scale(1.06);
     }
 
     .visual-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%);
+      background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%);
     }
 
     .visual-tag {
       position: absolute;
       top: 18px;
       left: 18px;
-      background: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.3);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       color: #fff;
@@ -327,7 +333,6 @@
       justify-content: center;
       gap: 8px;
       margin-top: 20px;
-      margin-bottom: 30px;
     }
 
     .dot {
@@ -336,120 +341,13 @@
       border-radius: 50%;
       background: #d0d0d5;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .dot.active {
       background: #111;
       width: 24px;
       border-radius: 4px;
-    }
-
-    /* Action Controls */
-    .bottom-controls {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-    }
-
-    .action-btn {
-      background: #111;
-      color: #fff;
-      border: none;
-      padding: 12px 26px;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s, background 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .action-btn:hover {
-      transform: translateY(-2px);
-      background: #222;
-    }
-
-    .action-btn.secondary {
-      background: #ffffff;
-      color: #111;
-      border: 1px solid #e0e0e0;
-    }
-
-    .action-btn.secondary:hover {
-      background: #f5f5f7;
-    }
-
-    /* Modal Form */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      z-index: 100;
-    }
-
-    .modal-overlay.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .modal-card {
-      background: #fff;
-      width: 100%;
-      max-width: 460px;
-      border-radius: 24px;
-      padding: 32px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .modal-close {
-      background: #f0f0f2;
-      border: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .form-group {
-      margin-bottom: 14px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #555;
-      margin-bottom: 6px;
-    }
-
-    .form-group input, .form-group textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #e0e0e0;
-      border-radius: 10px;
-      font-size: 14px;
-      outline: none;
-      font-family: inherit;
     }
 
     @media (max-width: 768px) {
@@ -468,7 +366,7 @@
     <div class="tag-container">
       <div class="pill-tag">
         <span class="dot"></span>
-        005 • Case Studies
+        004 • Case Studies
       </div>
     </div>
 
@@ -490,45 +388,10 @@
 
     <!-- Pagination Dots -->
     <div class="pagination-dots" id="dotsContainer"></div>
-
-    <!-- Actions -->
-    <div class="bottom-controls">
-      <button class="action-btn" id="openModalBtn">Explore All & Add New</button>
-      <button class="action-btn secondary" onclick="resetDefaults()">Reset Sites</button>
-    </div>
-  </div>
-
-  <!-- Add Modal -->
-  <div class="modal-overlay" id="addModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>Add New Project</h3>
-        <button class="modal-close" id="closeModalBtn">&times;</button>
-      </div>
-      <form id="addSiteForm">
-        <div class="form-group">
-          <label>Project Title</label>
-          <input type="text" id="siteTitle" placeholder="e.g. Creator Tool" required />
-        </div>
-        <div class="form-group">
-          <label>URL</label>
-          <input type="text" id="siteUrl" placeholder="anormendonca.github.io/new-app" required />
-        </div>
-        <div class="form-group">
-          <label>Description</label>
-          <textarea id="siteDesc" rows="3" placeholder="Short summary..." required></textarea>
-        </div>
-        <div class="form-group">
-          <label>Image URL (Optional)</label>
-          <input type="url" id="siteImage" placeholder="https://..." />
-        </div>
-        <button type="submit" class="action-btn" style="width: 100%; justify-content: center; margin-top: 10px;">Save Website</button>
-      </form>
-    </div>
   </div>
 
   <script>
-    const defaultProjects = [
+    const projects = [
       {
         id: 'portfolio',
         name: 'PORTFOLIO',
@@ -536,8 +399,7 @@
         desc: 'Interactive platform highlighting personal work, design philosophy, case studies, and engineering projects.',
         url: 'https://anormendonca.github.io/portfolio',
         category: 'Personal Brand',
-        image: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
-        bgGradient: 'linear-gradient(135deg, #111111 0%, #2a2a2a 100%)',
+        image: 'https://i.pinimg.com/736x/20/a6/86/20a68668fbcc120d6d880ffb233b9473.jpg',
         stats: [
           { val: '100%', label: 'Custom Code' },
           { val: '2026', label: 'Updated' },
@@ -551,8 +413,7 @@
         desc: 'A web suite for pass-and-play social games like Impostor, Mafia, and Fake Artist.',
         url: 'https://anormendonca.github.io/games',
         category: 'Gaming Platform',
-        image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-        bgGradient: 'linear-gradient(135deg, #1d1b26 0%, #3a3250 100%)',
+        image: 'https://i.pinimg.com/736x/07/8c/4a/078c4a00bf42f8ef6122c79a3873fce9.jpg',
         stats: [
           { val: '3+', label: 'Games Built' },
           { val: 'Local', label: 'Pass & Play' },
@@ -562,16 +423,15 @@
       {
         id: 'fmhl',
         name: 'FMHL PLATFORM',
-        title: 'FMHL Data & Hub Portal',
-        desc: 'Custom data dashboard and central management suite built for specialized project analytics and tracking.',
+        title: 'Free Minecraft Hosting List',
+        desc: 'Free Minecraft hosting list, MC totem, and MC skin creator.',
         url: 'https://anormendonca.github.io/fmhl',
-        category: 'Web App',
-        image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
-        bgGradient: 'linear-gradient(135deg, #0d233a 0%, #1a4975 100%)',
+        category: 'Minecraft Suite',
+        image: 'https://i.pinimg.com/736x/be/67/c4/be67c41aaceb3854347b983fec91103f.jpg',
         stats: [
-          { val: 'Realtime', label: 'Sync' },
-          { val: '99.9%', label: 'Uptime' },
-          { val: 'v2.0', label: 'Engine' }
+          { val: 'Realtime', label: 'Listings' },
+          { val: 'Skin', label: 'Creator' },
+          { val: 'Totem', label: 'Generator' }
         ]
       },
       {
@@ -581,8 +441,7 @@
         desc: 'Minimalist suite of productivity tools, task trackers, and focus utilities designed for execution.',
         url: 'https://anormendonca.github.io/productivity',
         category: 'Utilities',
-        image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=800&q=80',
-        bgGradient: 'linear-gradient(135deg, #1a2a22 0%, #2f523f 100%)',
+        image: 'https://i.pinimg.com/736x/78/81/a2/7881a2e6661cdf0a04e0feec569c00b6.jpg',
         stats: [
           { val: '+40%', label: 'Output' },
           { val: '0', label: 'Distractions' },
@@ -591,7 +450,6 @@
       }
     ];
 
-    let projects = JSON.parse(localStorage.getItem('my_web_showcase')) || defaultProjects;
     let currentIndex = 0;
 
     const deck = document.getElementById('deck');
@@ -606,9 +464,14 @@
       projects.forEach((proj, idx) => {
         const card = document.createElement('div');
         card.className = 'project-card';
-        if (idx === currentIndex) card.classList.add('active');
-        else if (idx === (currentIndex - 1 + projects.length) % projects.length) card.classList.add('prev-card');
-        else if (idx === (currentIndex + 1) % projects.length) card.classList.add('next-card');
+        
+        if (idx === currentIndex) {
+          card.classList.add('active');
+        } else if (idx === (currentIndex - 1 + projects.length) % projects.length) {
+          card.classList.add('prev-card');
+        } else if (idx === (currentIndex + 1) % projects.length) {
+          card.classList.add('next-card');
+        }
 
         const statsHtml = proj.stats.map(s => `
           <div class="stat-item">
@@ -618,10 +481,10 @@
         `).join('');
 
         card.innerHTML = `
-          <div class="card-visual" style="background: ${proj.bgGradient || '#111'};">
-            ${proj.image ? `<div class="card-visual-bg" style="background-image: url('${proj.image}');"></div>` : ''}
+          <div class="card-visual">
+            <div class="card-visual-bg" style="background-image: url('${proj.image}');"></div>
             <div class="visual-overlay"></div>
-            <div class="visual-tag">${proj.category || 'Web Project'}</div>
+            <div class="visual-tag">${proj.category}</div>
           </div>
           <div class="card-info">
             <div>
@@ -631,7 +494,7 @@
               </div>
               <h2 class="card-title">${proj.title}</h2>
               <p class="card-desc">${proj.desc}</p>
-              <a href="${proj.url.startsWith('http') ? proj.url : 'https://' + proj.url}" target="_blank" class="link-btn">
+              <a href="${proj.url}" target="_blank" class="link-btn">
                 Read More
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
               </a>
@@ -666,47 +529,11 @@
       renderCards();
     });
 
-    // Modal
-    const modal = document.getElementById('addModal');
-    document.getElementById('openModalBtn').addEventListener('click', () => modal.classList.add('open'));
-    document.getElementById('closeModalBtn').addEventListener('click', () => modal.classList.remove('open'));
-
-    document.getElementById('addSiteForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const title = document.getElementById('siteTitle').value.trim();
-      const url = document.getElementById('siteUrl').value.trim();
-      const desc = document.getElementById('siteDesc').value.trim();
-      const image = document.getElementById('siteImage').value.trim();
-
-      projects.push({
-        id: 'custom-' + Date.now(),
-        name: title.toUpperCase(),
-        title: title,
-        desc: desc,
-        url: url,
-        category: 'Custom App',
-        image: image || 'https://images.unsplash.com/photo-1522542550221-31fd19575a2d?auto=format&fit=crop&w=800&q=80',
-        bgGradient: 'linear-gradient(135deg, #111111 0%, #333333 100%)',
-        stats: [
-          { val: 'v1.0', label: 'Release' },
-          { val: 'Active', label: 'Status' },
-          { val: 'New', label: 'Added' }
-        ]
-      });
-
-      localStorage.setItem('my_web_showcase', JSON.stringify(projects));
-      currentIndex = projects.length - 1;
-      renderCards();
-      modal.classList.remove('open');
-      e.target.reset();
+    // Keyboard navigation support
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') prevBtn.click();
+      if (e.key === 'ArrowRight') nextBtn.click();
     });
-
-    function resetDefaults() {
-      localStorage.removeItem('my_web_showcase');
-      projects = [...defaultProjects];
-      currentIndex = 0;
-      renderCards();
-    }
 
     renderCards();
   </script>
