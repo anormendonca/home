@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Party Games Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            theme: {
+              bg: '#ded8cc',
+              cardBg: '#d3ccbe',
+              textDark: '#121212',
+              muted: '#666156',
+              line: '#c3bdae',
+              darkBg: '#121212',
+              pillDark: '#1a1a1a'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,800&display=swap');
+    
+    body {
+      background-color: #ded8cc;
+      color: #121212;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Dashed filter button styling */
+    .btn-dashed {
+      border: 1.5px dashed #121212;
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+    .btn-dashed:hover {
+      background-color: rgba(18, 18, 18, 0.06);
+    }
+
+    .active-pill {
+      background-color: #121212;
+      color: #ded8cc;
+      border: 1.5px solid #121212;
+    }
+
+    /* Hover scale for icon thumbnails */
+    .game-icon-card {
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .game-card:hover .game-icon-card {
+      transform: scale(1.03);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased">
+
+  <div>
+    <!-- Navigation Bar -->
+    <header class="border-b border-theme-line px-6 py-5 max-w-7xl mx-auto w-full">
+      <div class="flex items-center justify-between">
+        <!-- Logo -->
+        <a href="#" class="text-2xl font-black tracking-tighter text-theme-textDark uppercase">
+          PartyHub
+        </a>
+
+        <!-- Direct Contact Links -->
+        <div class="flex items-center gap-3 sm:gap-6 text-xs font-bold text-theme-textDark">
+          <a href="https://instagram.com/ntrxim" target="_blank" class="flex items-center gap-1.5 hover:opacity-75 transition">
+            <i class="fa-brands fa-instagram text-base"></i>
+            <span class="hidden sm:inline">@ntrxim</span>
+          </a>
+          <a href="mailto:ntrxi@proton.me" class="flex items-center gap-1.5 bg-theme-textDark text-theme-bg px-3.5 py-2 rounded-full hover:bg-neutral-800 transition">
+            <i class="fa-regular fa-envelope text-sm"></i>
+            <span>ntrxi@proton.me</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-6 pt-10 pb-16 w-full space-y-8">
+      
+      <!-- Heading & Search Row -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <h1 class="text-4xl sm:text-5xl font-black tracking-tight text-theme-textDark">
+          Browse All Games
+        </h1>
+
+        <!-- Search Bar -->
+        <div class="relative w-full md:w-80">
+          <input 
+            type="text" 
+            id="search-input" 
+            oninput="filterGames()" 
+            placeholder="Search" 
+            class="w-full bg-theme-pillDark text-white placeholder-neutral-400 text-sm font-medium rounded-full px-5 py-2.5 pr-10 focus:outline-none focus:ring-2 focus:ring-black"
+          />
+          <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 text-sm pointer-events-none"></i>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="border-b border-theme-line w-full"></div>
+
+      <!-- Filter Category Pills -->
+      <div class="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none" id="category-pills">
+        <button onclick="setFilter('All', this)" class="filter-btn active-pill text-xs sm:text-sm font-bold px-5 py-2 rounded-full whitespace-nowrap">
+          All Games
+        </button>
+        <button onclick="setFilter('Drawing', this)" class="filter-btn btn-dashed text-xs sm:text-sm font-bold text-theme-textDark px-5 py-2 rounded-full whitespace-nowrap">
+          Drawing
+        </button>
+        <button onclick="setFilter('Social Deduction', this)" class="filter-btn btn-dashed text-xs sm:text-sm font-bold text-theme-textDark px-5 py-2 rounded-full whitespace-nowrap">
+          Social Deduction
+        </button>
+        <button onclick="setFilter('Secret Word', this)" class="filter-btn btn-dashed text-xs sm:text-sm font-bold text-theme-textDark px-5 py-2 rounded-full whitespace-nowrap">
+          Secret Word
+        </button>
+        <button onclick="setFilter('Bluffing', this)" class="filter-btn btn-dashed text-xs sm:text-sm font-bold text-theme-textDark px-5 py-2 rounded-full whitespace-nowrap">
+          Bluffing
+        </button>
+      </div>
+
+      <!-- Games Grid -->
+      <div id="games-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 pt-4">
+        <!-- Cards injected dynamically via JS -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-theme-darkBg text-theme-bg rounded-t-[3rem] sm:rounded-t-[4rem] mt-16 pt-16 pb-10 px-6 sm:px-12 lg:px-16">
+    <div class="max-w-7xl mx-auto space-y-12">
+      
+      <div class="flex flex-col md:flex-row md:items-start justify-between gap-8">
+        <!-- Logo & Description -->
+        <div class="space-y-4 max-w-sm">
+          <h2 class="text-5xl font-black tracking-tighter uppercase leading-none">PartyHub</h2>
+          <p class="text-xs text-neutral-400 leading-relaxed font-medium">
+            A minimalist portal for party games, social deduction, drawing, and secret word web games.
+          </p>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 text-sm font-bold">
+          <a href="https://instagram.com/ntrxim" target="_blank" class="flex items-center gap-2 text-neutral-300 hover:text-white transition">
+            <i class="fa-brands fa-instagram text-xl"></i>
+            <span>@ntrxim</span>
+          </a>
+          <a href="mailto:ntrxi@proton.me" class="flex items-center gap-2 text-neutral-300 hover:text-white transition">
+            <i class="fa-regular fa-envelope text-xl"></i>
+            <span>ntrxi@proton.me</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Bottom Copyright -->
+      <div class="pt-6 border-t border-neutral-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-neutral-500 uppercase tracking-widest font-semibold">
+        <div>&copy; 2026 PARTYHUB GAMES INC.</div>
+        <a href="https://anormendonca.github.io/games/" target="_blank" class="hover:text-white transition">HOSTED AT ANORMENDONCA</a>
+      </div>
+
+    </div>
+  </footer>
+
+  <script>
+    // Games list using FontAwesome icons for thumbnails
+    const GAMES = [
+      {
+        id: 'fake-artist',
+        title: 'Fake Artist',
+        author: '',
+        url: 'https://anormendonca.github.io/games/fake_artist.html',
+        icon: 'fa-palette',
+        tags: ['DRAWING', 'BLUFFING']
+      },
+      {
+        id: 'mafia',
+        title: 'Mafia',
+        author: '',
+        url: 'https://anormendonca.github.io/games/mafia.html',
+        icon: 'fa-user-ninja',
+        tags: ['SOCIAL DEDUCTION']
+      },
+      {
+        id: 'imposter',
+        title: 'Imposter',
+        author: '',
+        url: 'https://anormendonca.github.io/games/imposter.html',
+        icon: 'fa-mask',
+        tags: ['SECRET WORD', 'BLUFFING']
+      }
+    ];
+
+    let currentFilter = 'All';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderGrid();
+    });
+
+    function renderGrid() {
+      const grid = document.getElementById('games-grid');
+      const searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+      grid.innerHTML = '';
+
+      // Filter games based on category and search query
+      const filtered = GAMES.filter(game => {
+        const matchesCategory = (currentFilter === 'All') || 
+          (game.tags && game.tags.some(t => t.toLowerCase() === currentFilter.toLowerCase()));
+        
+        const matchesSearch = !searchQuery || 
+          game.title.toLowerCase().includes(searchQuery) ||
+          game.author.toLowerCase().includes(searchQuery) ||
+          (game.tags && game.tags.some(t => t.toLowerCase().includes(searchQuery)));
+
+        return matchesCategory && matchesSearch;
+      });
+
+      // Render game cards with icon thumbnails
+      filtered.forEach(game => {
+        const card = document.createElement('div');
+        card.className = 'game-card flex flex-col group cursor-pointer relative';
+
+        const tagsHTML = (game.tags || []).map(tag => 
+          `<span class="bg-theme-pillDark text-white text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md uppercase">${tag}</span>`
+        ).join(' ');
+
+        card.innerHTML = `
+          <a href="${game.url}" target="_blank" class="game-icon-card block w-full aspect-square rounded-3xl bg-theme-pillDark flex items-center justify-center text-7xl text-theme-bg shadow-sm border border-black/5">
+            <i class="fa-solid ${game.icon}"></i>
+          </a>
+
+          <div class="mt-4 flex items-start justify-between gap-2">
+            <div>
+              <a href="${game.url}" target="_blank" class="text-2xl font-bold text-theme-textDark tracking-tight group-hover:underline block">
+                ${game.title}
+              </a>
+              <p class="text-xs font-semibold text-theme-muted uppercase tracking-wider mt-1">
+                BY ${game.author}
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-1 justify-end pt-1">
+              ${tagsHTML}
+            </div>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function setFilter(category, btnElement) {
+      currentFilter = category;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.className = 'filter-btn btn-dashed text-xs sm:text-sm font-bold text-theme-textDark px-5 py-2 rounded-full whitespace-nowrap';
+      });
+      btnElement.className = 'filter-btn active-pill text-xs sm:text-sm font-bold px-5 py-2 rounded-full whitespace-nowrap';
+      renderGrid();
+    }
+
+    function filterGames() {
+      renderGrid();
+    }
+  </script>
+</body>
+</html>
