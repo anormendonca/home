@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#ded8cc] text-[#121212]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mafia - Pass the Phone Party Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        theme: {
+                            bg: '#ded8cc',
+                            cardBg: '#d3ccbe',
+                            textDark: '#121212',
+                            muted: '#666156',
+                            line: '#c3bdae',
+                            darkBg: '#121212',
+                            pillDark: '#1a1a1a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #ded8cc;
+            color: #121212;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .glass-panel {
+            background: #d3ccbe;
+            border: 1px solid #c3bdae;
+        }
+        .glass-card {
+            background: #d3ccbe;
+            border: 1px solid #c3bdae;
+        }
+        .dark-card {
+            background: #1a1a1a;
+            color: #ded8cc;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="min-h-full font-sans antialiased bg-[#ded8cc] text-[#121212] flex flex-col justify-between items-center select-none overflow-x-hidden">
+
+    <div id="app" class="max-w-md w-full min-h-screen flex flex-col justify-between p-4 relative">
+        
+        <!-- Global Header -->
+        <header class="flex items-center justify-between py-3 px-1 z-10 border-b border-[#c3bdae] pb-4">
+            <div class="flex items-center space-x-2.5 cursor-pointer" onclick="goHome()">
+                <div class="w-10 h-10 rounded-xl bg-[#121212] flex items-center justify-center text-[#ded8cc] shadow-md">
+                    <i data-lucide="skull" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-2xl tracking-tight text-[#121212] uppercase leading-none">
+                        MAFIA
+                    </h1>
+                    <p class="text-[10px] text-[#666156] tracking-widest font-bold uppercase mt-0.5">Pass The Phone</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <!-- Homepage Button -->
+                <button onclick="goHome()" title="Go to Homepage" class="px-3 py-2.5 rounded-xl bg-[#d3ccbe] border border-[#c3bdae] text-[#121212] hover:bg-[#c8c0b0] transition flex items-center gap-1.5 text-xs font-bold shadow-sm active:scale-95">
+                    <i data-lucide="home" class="w-4 h-4"></i>
+                    <span>Home</span>
+                </button>
+                <!-- How to Play Button -->
+                <button onclick="openHowToPlay()" title="How to Play" class="p-2.5 rounded-xl bg-[#d3ccbe] border border-[#c3bdae] text-[#121212] hover:bg-[#c8c0b0] transition active:scale-95">
+                    <i data-lucide="help-circle" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 flex flex-col justify-center my-4 z-10">
+            
+            <!-- SCREEN 1: GAME SETUP -->
+            <section id="screenSetup" class="flex flex-col space-y-4">
+                <div class="text-center space-y-1">
+                    <h2 class="text-2xl font-black tracking-tight text-[#121212]">Game Setup</h2>
+                    <p class="text-xs font-semibold text-[#666156]">Configure players and town special roles</p>
+                </div>
+
+                <div class="glass-panel p-4 rounded-2xl space-y-3">
+                    <!-- Players Count -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="block text-sm font-bold text-[#121212]">Total Players</span>
+                            <span class="text-xs font-medium text-[#666156]">Min: 4 | Max: 16</span>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-[#1a1a1a] p-1.5 rounded-xl border border-[#121212]">
+                            <button onclick="updatePlayerCount(-1)" class="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#3a3a3a] flex items-center justify-center text-[#ded8cc] font-bold transition active:scale-95">-</button>
+                            <span id="playerCountText" class="font-bold text-lg w-6 text-center text-[#ded8cc]">6</span>
+                            <button onclick="updatePlayerCount(1)" class="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#3a3a3a] flex items-center justify-center text-[#ded8cc] font-bold transition active:scale-95">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Mafia Count -->
+                    <div class="flex items-center justify-between pt-2 border-t border-[#c3bdae]">
+                        <div>
+                            <span class="block text-sm font-bold text-[#121212]">Mafia Members</span>
+                            <span class="text-xs font-medium text-[#666156]" id="mafiaLimitHint">Max 2 for 6 players</span>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-[#1a1a1a] p-1.5 rounded-xl border border-[#121212]">
+                            <button onclick="updateMafiaCount(-1)" class="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#3a3a3a] flex items-center justify-center text-red-400 font-bold transition active:scale-95">-</button>
+                            <span id="mafiaCountText" class="font-bold text-lg w-6 text-center text-red-400">1</span>
+                            <button onclick="updateMafiaCount(1)" class="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#3a3a3a] flex items-center justify-center text-red-400 font-bold transition active:scale-95">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Special Roles Toggles -->
+                    <div class="pt-2 border-t border-[#c3bdae] space-y-2.5">
+                        <span class="block text-xs font-bold uppercase tracking-wider text-[#666156]">Special Roles</span>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="shield" class="w-4 h-4 text-emerald-700"></i>
+                                <div>
+                                    <span class="block text-xs font-bold text-[#121212]">Doctor (Medic)</span>
+                                    <span class="text-[10px] text-[#666156]">Can protect 1 target every night</span>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="roleDoctorToggle" class="sr-only peer" checked>
+                                <div class="w-9 h-5 bg-[#c3bdae] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-700"></div>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="search" class="w-4 h-4 text-blue-700"></i>
+                                <div>
+                                    <span class="block text-xs font-bold text-[#121212]">Detective (Cop)</span>
+                                    <span class="text-[10px] text-[#666156]">Investigates 1 suspect every night</span>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="roleDetectiveToggle" class="sr-only peer" checked>
+                                <div class="w-9 h-5 bg-[#c3bdae] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-700"></div>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="crosshair" class="w-4 h-4 text-amber-700"></i>
+                                <div>
+                                    <span class="block text-xs font-bold text-[#121212]">Vigilante</span>
+                                    <span class="text-[10px] text-[#666156]">Has 1 bullet to kill a suspect at night</span>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="roleVigilanteToggle" class="sr-only peer">
+                                <div class="w-9 h-5 bg-[#c3bdae] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-700"></div>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="smile" class="w-4 h-4 text-purple-700"></i>
+                                <div>
+                                    <span class="block text-xs font-bold text-[#121212]">Jester (Fool)</span>
+                                    <span class="text-[10px] text-[#666156]">Wins solo if voted off during day</span>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="roleJesterToggle" class="sr-only peer">
+                                <div class="w-9 h-5 bg-[#c3bdae] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-700"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Editable Player Names Accordion -->
+                    <div class="pt-2 border-t border-[#c3bdae]">
+                        <button onclick="togglePlayerNamesList()" class="flex items-center justify-between w-full text-xs font-bold text-[#121212]">
+                            <span class="flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4"></i> Customize Player Names</span>
+                            <i data-lucide="chevron-down" id="namesChevron" class="w-4 h-4 transition-transform"></i>
+                        </button>
+                        <div id="playerNamesContainer" class="hidden grid grid-cols-2 gap-2 mt-3 max-h-36 overflow-y-auto pr-1 no-scrollbar">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Start Game Button -->
+                <button onclick="startGame()" class="w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-black text-lg tracking-wide uppercase shadow-lg transition transform active:scale-98 flex items-center justify-center space-x-2">
+                    <span>Start Game</span>
+                    <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+                </button>
+            </section>
+
+            <!-- SCREEN 2: PASS PHONE INTERMEDIATE SCREEN -->
+            <section id="screenPassPhone" class="hidden flex flex-col items-center justify-center text-center space-y-6 py-6">
+                <div class="relative">
+                    <div class="w-24 h-24 rounded-full bg-[#121212]/10 flex items-center justify-center animate-pulse">
+                        <div class="w-16 h-16 rounded-full bg-[#121212]/20 flex items-center justify-center">
+                            <i data-lucide="smartphone" class="w-8 h-8 text-[#121212] animate-bounce"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <p class="text-xs font-bold uppercase tracking-widest text-[#666156]" id="passPhonePromptSub">Pass the Phone to</p>
+                    <h2 id="passPlayerName" class="text-4xl font-black text-[#121212] tracking-tight">Player 1</h2>
+                    <p class="text-xs font-medium text-[#666156] max-w-xs mx-auto">Keep phone hidden from other players before opening your secret role card!</p>
+                </div>
+
+                <button onclick="prepareRevealCard()" class="w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-base shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                    <i data-lucide="eye" class="w-5 h-5"></i>
+                    <span>I am <span id="passPlayerBtnName">Player 1</span> (Reveal)</span>
+                </button>
+            </section>
+
+            <!-- SCREEN 3: REVEAL SECRET ROLE CARD -->
+            <section id="screenRevealCard" class="hidden flex flex-col items-center justify-between h-full space-y-6 py-4">
+                <div class="text-center space-y-1">
+                    <span class="text-xs uppercase tracking-widest text-[#666156] font-bold">Secret Assignment</span>
+                    <h2 id="cardPlayerName" class="text-2xl font-black text-[#121212]">Player 1</h2>
+                </div>
+
+                <div id="secretCard" class="w-full glass-card border border-[#c3bdae] rounded-3xl p-6 flex flex-col items-center justify-center min-h-[260px] text-center relative overflow-hidden transition-all duration-500">
+                    
+                    <div id="cardHiddenState" class="flex flex-col items-center space-y-4">
+                        <div class="w-16 h-16 rounded-2xl bg-[#1a1a1a] flex items-center justify-center text-[#ded8cc]">
+                            <i data-lucide="lock" class="w-8 h-8"></i>
+                        </div>
+                        <p class="text-sm text-[#121212] font-semibold">Tap button below to reveal your secret role!</p>
+                    </div>
+
+                    <div id="cardRevealedState" class="hidden flex flex-col items-center space-y-3 w-full">
+                        <div id="roleBadge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#121212] text-[#ded8cc]">
+                            Civilian
+                        </div>
+
+                        <div class="py-1 w-full">
+                            <span class="text-xs text-[#666156] font-bold block mb-1">Assigned Role</span>
+                            <div id="secretRoleText" class="text-2xl font-black text-[#121212] tracking-wide break-words uppercase">
+                                CIVILIAN
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-[#ded8cc] rounded-xl border border-[#c3bdae] w-full text-xs space-y-1">
+                            <span id="roleDescText" class="text-[#121212] font-semibold block leading-snug">
+                                You are an innocent town member. Work with the town to vote off the Mafia!
+                            </span>
+                            <span id="roleTeammatesText" class="text-[11px] font-bold text-red-600 block mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full space-y-3">
+                    <button id="toggleRevealBtn" onclick="toggleCardReveal()" class="w-full py-3.5 rounded-xl bg-[#d3ccbe] hover:bg-[#c8c0b0] text-[#121212] font-bold text-sm border border-[#c3bdae] transition flex items-center justify-center gap-2">
+                        <i data-lucide="eye" id="revealIcon" class="w-4 h-4"></i>
+                        <span id="revealBtnText">Show Secret Role</span>
+                    </button>
+
+                    <button id="hideAndPassBtn" onclick="nextPlayerRole()" class="hidden w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-base shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                        <span>Got It! Hide & Pass Phone</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- SCREEN 4: SECRET NIGHT PHASE (PASS PHONE FOR NIGHT ACTIONS) -->
+            <section id="screenNightPass" class="hidden flex flex-col items-center justify-center text-center space-y-6 py-6">
+                <div class="relative">
+                    <div class="w-24 h-24 rounded-full bg-[#1a1a1a] flex items-center justify-center shadow-xl">
+                        <i data-lucide="moon" class="w-10 h-10 text-amber-400 animate-pulse"></i>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <span class="px-3 py-1 rounded-full bg-[#121212] text-[#ded8cc] text-xs font-bold uppercase tracking-wider">
+                        Night Phase
+                    </span>
+                    <h2 class="text-3xl font-black text-[#121212] tracking-tight" id="nightPassRoleTitle">Pass Phone to MAFIA</h2>
+                    <p class="text-xs font-medium text-[#666156] max-w-xs mx-auto" id="nightPassSubtitle">
+                        Only the requested active player should take the phone.
+                    </p>
+                </div>
+
+                <button onclick="startNightActionInput()" class="w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-base shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                    <i data-lucide="unlock" class="w-5 h-5"></i>
+                    <span>Perform Night Action</span>
+                </button>
+            </section>
+
+            <!-- SCREEN 5: NIGHT ACTION INPUT SCREEN -->
+            <section id="screenNightAction" class="hidden flex flex-col space-y-4">
+                <div class="text-center space-y-1">
+                    <span id="nightActionRoleBadge" class="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-bold uppercase">
+                        MAFIA ACTION
+                    </span>
+                    <h2 class="text-2xl font-black text-[#121212]" id="nightActionTitle">Choose Target to Eliminate</h2>
+                    <p class="text-xs font-semibold text-[#666156]" id="nightActionDesc">Select a player to eliminate tonight.</p>
+                </div>
+
+                <!-- Living Target List -->
+                <div id="nightTargetList" class="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-1 no-scrollbar">
+                    <!-- JS Injected Target Buttons -->
+                </div>
+
+                <!-- Detective Investigation Result Card -->
+                <div id="detectiveResultBox" class="hidden glass-panel p-4 rounded-2xl border-2 border-blue-600 space-y-1 text-center">
+                    <span class="text-[10px] font-bold text-blue-800 uppercase tracking-wider">Investigation Result</span>
+                    <h3 id="detectiveResultText" class="text-lg font-black text-[#121212]">Player X is MAFIA!</h3>
+                </div>
+
+                <button id="confirmNightActionBtn" onclick="confirmNightAction()" disabled class="w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-base shadow-lg transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Confirm Night Action
+                </button>
+            </section>
+
+            <!-- SCREEN 6: MORNING SUNRISE / NIGHT RESULTS -->
+            <section id="screenMorning" class="hidden flex flex-col space-y-5 text-center">
+                <div class="space-y-1">
+                    <div class="w-16 h-16 rounded-full bg-amber-500/20 text-amber-700 flex items-center justify-center mx-auto">
+                        <i data-lucide="sun" class="w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-2xl font-black text-[#121212]">Morning News</h2>
+                    <p class="text-xs font-semibold text-[#666156]">The town wakes up to see what happened overnight...</p>
+                </div>
+
+                <div class="glass-panel p-5 rounded-2xl border-2 border-[#121212] space-y-3">
+                    <h3 id="morningResultTitle" class="text-lg font-black text-red-600">
+                        Player X was found dead!
+                    </h3>
+                    <p id="morningResultDetail" class="text-xs font-semibold text-[#121212] leading-relaxed">
+                        They were eliminated during the night.
+                    </p>
+                </div>
+
+                <button onclick="goToDiscussionPhase()" class="w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-base shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                    <span>Proceed to Town Discussion</span>
+                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                </button>
+            </section>
+
+            <!-- SCREEN 7: DISCUSSION & TIMER SCREEN -->
+            <section id="screenDiscussion" class="hidden flex flex-col items-center justify-between space-y-5">
+                <div class="text-center space-y-1">
+                    <div class="flex items-center justify-center gap-2">
+                        <span id="roundBadge" class="px-3 py-1 rounded-full bg-[#121212] text-[#ded8cc] text-xs font-bold">
+                            Day 1 Discussion
+                        </span>
+                    </div>
+                    <h2 class="text-2xl font-black text-[#121212]">Town Hall Discussion</h2>
+                    <p class="text-xs font-semibold text-[#666156]">Place phone in center. Discuss clues and find the Mafia!</p>
+                </div>
+
+                <!-- First Speaker Card -->
+                <div class="w-full glass-panel p-4 rounded-2xl text-center space-y-1">
+                    <span class="text-[11px] font-bold tracking-wider uppercase text-[#666156]">First Speaker Selected</span>
+                    <div class="flex items-center justify-center gap-2 text-xl font-black text-[#121212]">
+                        <i data-lucide="mic" class="w-5 h-5"></i>
+                        <span id="firstSpeakerName">Player X</span>
+                    </div>
+                    <p class="text-[11px] font-semibold text-[#666156]">This player starts off the discussion!</p>
+                </div>
+
+                <!-- Timer Widget -->
+                <div class="w-full dark-card p-5 rounded-2xl flex flex-col items-center space-y-3">
+                    <div id="timerDisplay" class="text-5xl font-black text-[#ded8cc] tracking-widest font-mono">
+                        03:00
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <button onclick="adjustTimer(-30)" class="px-3 py-1.5 rounded-lg bg-[#2a2a2a] text-xs font-bold text-[#ded8cc] hover:bg-[#3a3a3a]">-30s</button>
+                        <button id="playPauseTimerBtn" onclick="toggleTimer()" class="p-3 rounded-xl bg-[#ded8cc] text-[#121212] font-bold transition">
+                            <i data-lucide="play" id="timerControlIcon" class="w-5 h-5"></i>
+                        </button>
+                        <button onclick="adjustTimer(30)" class="px-3 py-1.5 rounded-lg bg-[#2a2a2a] text-xs font-bold text-[#ded8cc] hover:bg-[#3a3a3a]">+30s</button>
+                    </div>
+                </div>
+
+                <button onclick="goToVoting()" class="w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-base shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                    <i data-lucide="vote" class="w-5 h-5"></i>
+                    <span>Proceed to Town Vote</span>
+                </button>
+            </section>
+
+            <!-- SCREEN 8: VOTING & ELIMINATION -->
+            <section id="screenVoting" class="hidden flex flex-col space-y-4">
+                <div class="text-center space-y-1">
+                    <h2 class="text-2xl font-black text-[#121212]">Town Trial & Voting</h2>
+                    <p class="text-xs font-semibold text-[#666156]">Vote off who you suspect is Mafia</p>
+                </div>
+
+                <!-- Active Players List for Voting -->
+                <div id="votingList" class="grid grid-cols-1 gap-2 max-h-56 overflow-y-auto pr-1 no-scrollbar">
+                    <!-- JS Injected Player Buttons -->
+                </div>
+
+                <!-- Elimination Summary -->
+                <div id="eliminationSummary" class="hidden glass-panel p-4 rounded-2xl border-2 border-red-600 space-y-2 text-center">
+                    <h3 id="elimResultTitle" class="text-lg font-bold text-red-600">
+                        Player Eliminated!
+                    </h3>
+                    <p id="elimResultDetail" class="text-xs font-bold text-[#121212]">
+                        Player X was executed by town vote.
+                    </p>
+                    <div id="gameOutcomeBanner" class="hidden pt-2 border-t border-[#c3bdae]">
+                        <p id="gameOutcomeText" class="text-base font-black uppercase tracking-wide"></p>
+                    </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div id="votingActionControls" class="space-y-2">
+                    <button id="confirmEliminationBtn" onclick="confirmElimination()" class="w-full py-3.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        Execute Selected Suspect
+                    </button>
+                    
+                    <button id="continueNextNightBtn" onclick="startNightPhase()" class="hidden w-full py-3.5 rounded-xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-sm shadow-md transition">
+                        Start Next Night Phase
+                    </button>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="revealAndEndGame()" class="py-2.5 rounded-xl bg-[#d3ccbe] hover:bg-[#c8c0b0] text-[#121212] font-bold text-xs border border-[#c3bdae] transition">
+                            Reveal All Roles
+                        </button>
+                        <button onclick="goHome()" class="py-2.5 rounded-xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-xs shadow-md transition">
+                            Go to Homepage
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- How To Play Modal -->
+        <div id="howToPlayModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-panel max-w-sm w-full p-6 rounded-3xl border-2 border-[#121212] space-y-4 shadow-2xl">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-black text-[#121212] flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-5 h-5 text-[#121212]"></i> How To Play Mafia
+                    </h3>
+                    <button onclick="closeHowToPlay()" class="text-[#666156] hover:text-[#121212]">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div class="text-xs text-[#121212] font-medium space-y-2 max-h-80 overflow-y-auto no-scrollbar pr-1">
+                    <p><strong class="font-bold">1. Secret Roles:</strong> Pass phone to learn secret roles (Mafia, Doctor, Detective, Civilian, etc.).</p>
+                    <p><strong class="font-bold">2. Night Phase:</strong> Phone is passed to active night roles. Mafia picks a target to eliminate. Doctor picks a target to save. Detective inspects suspects.</p>
+                    <p><strong class="font-bold">3. Morning Sunrise:</strong> The town wakes up and sees who survived or died.</p>
+                    <p><strong class="font-bold">4. Town Discussion & Vote:</strong> Discuss clues, accuse suspects, and vote to execute a suspected Mafia member!</p>
+                </div>
+                <button onclick="closeHowToPlay()" class="w-full py-3 rounded-xl bg-[#121212] text-[#ded8cc] font-bold text-xs">Got It!</button>
+            </div>
+        </div>
+
+        <!-- Footer with Go to Homepage & ntrxi -->
+        <footer class="text-center text-xs font-semibold text-[#666156] py-4 z-10 space-y-1">
+            <div>Made by <span class="font-bold text-[#121212]">ntrxi</span></div>
+            <div>
+                <a href="https://anormendonca.github.io/games/" target="_blank" class="text-[#121212] font-bold underline hover:opacity-75 transition">
+                    Go to Homepage
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Roles Definition & Meta
+        const ROLES_INFO = {
+            MAFIA: {
+                title: 'MAFIA',
+                badgeBg: 'bg-red-600 text-white',
+                cardBorder: 'border-2 border-red-600 bg-red-500/10',
+                desc: 'You belong to the Mafia crime family. Work with your fellow Mafia members to eliminate civilians at night without getting caught!',
+                icon: 'skull'
+            },
+            CIVILIAN: {
+                title: 'CIVILIAN',
+                badgeBg: 'bg-[#121212] text-[#ded8cc]',
+                cardBorder: 'border-2 border-[#121212] bg-[#c3bdae]/30',
+                desc: 'You are an innocent town member. Listen carefully during discussions and vote out the Mafia during town trials!',
+                icon: 'user'
+            },
+            DOCTOR: {
+                title: 'DOCTOR',
+                badgeBg: 'bg-emerald-700 text-white',
+                cardBorder: 'border-2 border-emerald-700 bg-emerald-500/10',
+                desc: 'You are the town Doctor. Choose 1 player to heal and protect from elimination every night!',
+                icon: 'shield'
+            },
+            DETECTIVE: {
+                title: 'DETECTIVE',
+                badgeBg: 'bg-blue-700 text-white',
+                cardBorder: 'border-2 border-blue-700 bg-blue-500/10',
+                desc: 'You are the Cop/Detective. Investigate 1 suspect each night to reveal if they are Mafia or Innocent!',
+                icon: 'search'
+            },
+            VIGILANTE: {
+                title: 'VIGILANTE',
+                badgeBg: 'bg-amber-700 text-white',
+                cardBorder: 'border-2 border-amber-700 bg-amber-500/10',
+                desc: 'You are a rogue Vigilante. You have 1 bullet to eliminate a suspect at night whenever you choose.',
+                icon: 'crosshair'
+            },
+            JESTER: {
+                title: 'JESTER',
+                badgeBg: 'bg-purple-700 text-white',
+                cardBorder: 'border-2 border-purple-700 bg-purple-500/10',
+                desc: 'You are the Jester! Your goal is to act suspicious and get the town to execute you during the day vote!',
+                icon: 'smile'
+            }
+        };
+
+        let gameState = {
+            players: ['Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6'],
+            mafiaCount: 1,
+            hasDoctor: true,
+            hasDetective: true,
+            hasVigilante: false,
+            hasJester: false,
+            
+            // Session tracking
+            currentRound: 1,
+            playerRoles: [], // Array of objects: { name, roleKey, isAlive: true }
+            currentPlayerIndex: 0,
+            
+            // Night Action States
+            nightQueue: [],
+            nightQueueIndex: 0,
+            mafiaTarget: null,
+            doctorTarget: null,
+            detectiveTarget: null,
+            vigilanteTarget: null,
+            vigilanteBulletUsed: false,
+            nightKillList: [],
+
+            // Voting
+            selectedSuspectIndex: null,
+
+            // Timer
+            timerSeconds: 180,
+            timerInterval: null,
+            isTimerRunning: false,
+            firstSpeakerIndex: 0
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderPlayerNamesList();
+            lucide.createIcons();
+        });
+
+        function showScreen(screenId) {
+            ['screenSetup', 'screenPassPhone', 'screenRevealCard', 'screenNightPass', 'screenNightAction', 'screenMorning', 'screenDiscussion', 'screenVoting'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function goHome() {
+            clearInterval(gameState.timerInterval);
+            gameState.isTimerRunning = false;
+            showScreen('screenSetup');
+        }
+
+        function updatePlayerCount(delta) {
+            let newCount = gameState.players.length + delta;
+            if (newCount >= 4 && newCount <= 16) {
+                if (delta > 0) {
+                    gameState.players.push(`Player ${newCount}`);
+                } else {
+                    gameState.players.pop();
+                }
+
+                let maxMafia = Math.floor(gameState.players.length / 3);
+                if (gameState.mafiaCount > maxMafia) gameState.mafiaCount = maxMafia;
+
+                document.getElementById('playerCountText').textContent = gameState.players.length;
+                document.getElementById('mafiaCountText').textContent = gameState.mafiaCount;
+                document.getElementById('mafiaLimitHint').textContent = `Max ${maxMafia} for ${gameState.players.length} players`;
+                renderPlayerNamesList();
+            }
+        }
+
+        function updateMafiaCount(delta) {
+            let maxMafia = Math.floor(gameState.players.length / 3);
+            let newCount = gameState.mafiaCount + delta;
+            if (newCount >= 1 && newCount <= maxMafia) {
+                gameState.mafiaCount = newCount;
+                document.getElementById('mafiaCountText').textContent = gameState.mafiaCount;
+            }
+        }
+
+        function togglePlayerNamesList() {
+            document.getElementById('playerNamesContainer').classList.toggle('hidden');
+            document.getElementById('namesChevron').classList.toggle('rotate-180');
+        }
+
+        function renderPlayerNamesList() {
+            const container = document.getElementById('playerNamesContainer');
+            container.innerHTML = '';
+            gameState.players.forEach((name, idx) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-1 bg-[#ded8cc] rounded-xl px-2.5 py-1.5 border border-[#c3bdae]';
+                div.innerHTML = `
+                    <span class="text-[10px] font-bold text-[#666156] w-3">${idx + 1}</span>
+                    <input type="text" value="${name}" onchange="updatePlayerName(${idx}, this.value)" class="bg-transparent text-xs font-semibold text-[#121212] w-full focus:outline-none">
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function updatePlayerName(index, newName) {
+            if (newName.trim() !== '') gameState.players[index] = newName.trim();
+        }
+
+        function openHowToPlay() { document.getElementById('howToPlayModal').classList.remove('hidden'); }
+        function closeHowToPlay() { document.getElementById('howToPlayModal').classList.add('hidden'); }
+
+        // START GAME: ASSIGN ROLES
+        function startGame() {
+            gameState.hasDoctor = document.getElementById('roleDoctorToggle').checked;
+            gameState.hasDetective = document.getElementById('roleDetectiveToggle').checked;
+            gameState.hasVigilante = document.getElementById('roleVigilanteToggle').checked;
+            gameState.hasJester = document.getElementById('roleJesterToggle').checked;
+
+            let rolePool = [];
+            for (let i = 0; i < gameState.mafiaCount; i++) rolePool.push('MAFIA');
+            if (gameState.hasDoctor) rolePool.push('DOCTOR');
+            if (gameState.hasDetective) rolePool.push('DETECTIVE');
+            if (gameState.hasVigilante) rolePool.push('VIGILANTE');
+            if (gameState.hasJester) rolePool.push('JESTER');
+
+            while (rolePool.length < gameState.players.length) {
+                rolePool.push('CIVILIAN');
+            }
+
+            // Shuffle Roles
+            for (let i = rolePool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [rolePool[i], rolePool[j]] = [rolePool[j], rolePool[i]];
+            }
+
+            gameState.playerRoles = gameState.players.map((name, idx) => ({
+                name: name,
+                roleKey: rolePool[idx],
+                isAlive: true
+            }));
+
+            gameState.currentRound = 1;
+            gameState.currentPlayerIndex = 0;
+            gameState.vigilanteBulletUsed = false;
+
+            setupPassPhoneScreen();
+        }
+
+        function setupPassPhoneScreen() {
+            const player = gameState.playerRoles[gameState.currentPlayerIndex];
+            document.getElementById('passPhonePromptSub').textContent = "Pass the Phone to";
+            document.getElementById('passPlayerName').textContent = player.name;
+            document.getElementById('passPlayerBtnName').textContent = player.name;
+            showScreen('screenPassPhone');
+        }
+
+        function prepareRevealCard() {
+            const player = gameState.playerRoles[gameState.currentPlayerIndex];
+            document.getElementById('cardPlayerName').textContent = player.name;
+
+            const card = document.getElementById('secretCard');
+            const cardHiddenState = document.getElementById('cardHiddenState');
+            const cardRevealedState = document.getElementById('cardRevealedState');
+            const revealBtnText = document.getElementById('revealBtnText');
+            const hideAndPassBtn = document.getElementById('hideAndPassBtn');
+
+            card.className = "w-full glass-card border border-[#c3bdae] rounded-3xl p-6 flex flex-col items-center justify-center min-h-[260px] text-center relative overflow-hidden transition-all duration-500";
+            cardHiddenState.classList.remove('hidden');
+            cardRevealedState.classList.add('hidden');
+            hideAndPassBtn.classList.add('hidden');
+            revealBtnText.textContent = "Show Secret Role";
+
+            showScreen('screenRevealCard');
+        }
+
+        function toggleCardReveal() {
+            const cardHiddenState = document.getElementById('cardHiddenState');
+            const cardRevealedState = document.getElementById('cardRevealedState');
+            const revealBtnText = document.getElementById('revealBtnText');
+            const hideAndPassBtn = document.getElementById('hideAndPassBtn');
+            const card = document.getElementById('secretCard');
+
+            const player = gameState.playerRoles[gameState.currentPlayerIndex];
+            const roleInfo = ROLES_INFO[player.roleKey];
+
+            if (cardRevealedState.classList.contains('hidden')) {
+                cardHiddenState.classList.add('hidden');
+                cardRevealedState.classList.remove('hidden');
+                hideAndPassBtn.classList.remove('hidden');
+                revealBtnText.textContent = "Hide Role Card";
+
+                card.className = `w-full glass-card ${roleInfo.cardBorder} rounded-3xl p-6 flex flex-col items-center justify-center min-h-[260px] text-center relative overflow-hidden transition-all duration-500`;
+                
+                const roleBadge = document.getElementById('roleBadge');
+                roleBadge.className = `px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${roleInfo.badgeBg}`;
+                roleBadge.textContent = roleInfo.title;
+
+                document.getElementById('secretRoleText').textContent = roleInfo.title;
+                document.getElementById('roleDescText').textContent = roleInfo.desc;
+
+                const teammatesElem = document.getElementById('roleTeammatesText');
+                if (player.roleKey === 'MAFIA') {
+                    const teammates = gameState.playerRoles
+                        .filter((p, idx) => p.roleKey === 'MAFIA' && idx !== gameState.currentPlayerIndex)
+                        .map(p => p.name);
+                    teammatesElem.textContent = teammates.length > 0 
+                        ? `Fellow Mafia Members: ${teammates.join(', ')}` 
+                        : 'You are the solo Mafia member!';
+                } else {
+                    teammatesElem.textContent = '';
+                }
+            } else {
+                cardHiddenState.classList.remove('hidden');
+                cardRevealedState.classList.add('hidden');
+                revealBtnText.textContent = "Show Secret Role";
+                card.className = "w-full glass-card border border-[#c3bdae] rounded-3xl p-6 flex flex-col items-center justify-center min-h-[260px] text-center relative overflow-hidden transition-all duration-500";
+            }
+            lucide.createIcons();
+        }
+
+        function nextPlayerRole() {
+            gameState.currentPlayerIndex++;
+            if (gameState.currentPlayerIndex < gameState.playerRoles.length) {
+                setupPassPhoneScreen();
+            } else {
+                startNightPhase();
+            }
+        }
+
+        // SECRET NIGHT PHASE MANAGEMENT
+        function startNightPhase() {
+            gameState.mafiaTarget = null;
+            gameState.doctorTarget = null;
+            gameState.detectiveTarget = null;
+            gameState.vigilanteTarget = null;
+            gameState.nightKillList = [];
+
+            // Build Night Queue based on active living roles
+            gameState.nightQueue = [];
+            
+            const hasLivingMafia = gameState.playerRoles.some(p => p.isAlive && p.roleKey === 'MAFIA');
+            if (hasLivingMafia) gameState.nightQueue.push('MAFIA');
+
+            const hasLivingDoctor = gameState.playerRoles.some(p => p.isAlive && p.roleKey === 'DOCTOR');
+            if (hasLivingDoctor) gameState.nightQueue.push('DOCTOR');
+
+            const hasLivingDetective = gameState.playerRoles.some(p => p.isAlive && p.roleKey === 'DETECTIVE');
+            if (hasLivingDetective) gameState.nightQueue.push('DETECTIVE');
+
+            const hasLivingVig = gameState.playerRoles.some(p => p.isAlive && p.roleKey === 'VIGILANTE');
+            if (hasLivingVig && !gameState.vigilanteBulletUsed) gameState.nightQueue.push('VIGILANTE');
+
+            gameState.nightQueueIndex = 0;
+            presentNextNightPass();
+        }
+
+        function presentNextNightPass() {
+            if (gameState.nightQueueIndex >= gameState.nightQueue.length) {
+                resolveNightResults();
+                return;
+            }
+
+            const activeRole = gameState.nightQueue[gameState.nightQueueIndex];
+            const titleElem = document.getElementById('nightPassRoleTitle');
+            const subElem = document.getElementById('nightPassSubtitle');
+
+            if (activeRole === 'MAFIA') {
+                titleElem.textContent = "Pass Phone to MAFIA";
+                subElem.textContent = "Mafia members take the phone secretly to choose a victim.";
+            } else if (activeRole === 'DOCTOR') {
+                titleElem.textContent = "Pass Phone to DOCTOR";
+                subElem.textContent = "The Doctor takes the phone to select someone to heal.";
+            } else if (activeRole === 'DETECTIVE') {
+                titleElem.textContent = "Pass Phone to DETECTIVE";
+                subElem.textContent = "The Detective takes the phone to inspect a suspect.";
+            } else if (activeRole === 'VIGILANTE') {
+                titleElem.textContent = "Pass Phone to VIGILANTE";
+                subElem.textContent = "The Vigilante takes the phone to shoot or skip.";
+            }
+
+            showScreen('screenNightPass');
+        }
+
+        function startNightActionInput() {
+            const activeRole = gameState.nightQueue[gameState.nightQueueIndex];
+            const badge = document.getElementById('nightActionRoleBadge');
+            const title = document.getElementById('nightActionTitle');
+            const desc = document.getElementById('nightActionDesc');
+            const detBox = document.getElementById('detectiveResultBox');
+
+            detBox.classList.add('hidden');
+            document.getElementById('confirmNightActionBtn').disabled = true;
+
+            if (activeRole === 'MAFIA') {
+                badge.className = "px-3 py-1 rounded-full bg-red-600 text-white text-xs font-bold uppercase";
+                badge.textContent = "MAFIA TARGET";
+                title.textContent = "Choose Target to Eliminate";
+                desc.textContent = "Select a civilian player to target tonight.";
+            } else if (activeRole === 'DOCTOR') {
+                badge.className = "px-3 py-1 rounded-full bg-emerald-700 text-white text-xs font-bold uppercase";
+                badge.textContent = "DOCTOR HEAL";
+                title.textContent = "Choose Target to Protect";
+                desc.textContent = "Select a player to shield from night attacks.";
+            } else if (activeRole === 'DETECTIVE') {
+                badge.className = "px-3 py-1 rounded-full bg-blue-700 text-white text-xs font-bold uppercase";
+                badge.textContent = "DETECTIVE INSPECTION";
+                title.textContent = "Choose Suspect to Investigate";
+                desc.textContent = "Select a player to reveal their alignment.";
+            } else if (activeRole === 'VIGILANTE') {
+                badge.className = "px-3 py-1 rounded-full bg-amber-700 text-white text-xs font-bold uppercase";
+                badge.textContent = "VIGILANTE BULLET";
+                title.textContent = "Choose Target or Skip";
+                desc.textContent = "Choose to shoot a player or skip tonight.";
+            }
+
+            renderNightTargetList(activeRole);
+            showScreen('screenNightAction');
+        }
+
+        function renderNightTargetList(activeRole) {
+            const list = document.getElementById('nightTargetList');
+            list.innerHTML = '';
+
+            gameState.playerRoles.forEach((p, idx) => {
+                if (!p.isAlive) return;
+
+                const btn = document.createElement('button');
+                btn.className = "w-full p-3.5 rounded-xl bg-[#d3ccbe] border border-[#c3bdae] hover:border-[#121212] text-[#121212] flex items-center justify-between font-bold text-sm transition";
+                btn.onclick = () => selectNightTarget(idx, activeRole, btn);
+                btn.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-7 h-7 rounded-full bg-[#121212] text-[#ded8cc] font-bold text-xs flex items-center justify-center">
+                            ${idx + 1}
+                        </div>
+                        <span>${p.name}</span>
+                    </div>
+                    <span class="text-xs text-[#666156] uppercase tracking-wider font-extrabold">Select</span>
+                `;
+                list.appendChild(btn);
+            });
+
+            if (activeRole === 'VIGILANTE') {
+                const skipBtn = document.createElement('button');
+                skipBtn.className = "w-full p-3.5 rounded-xl bg-[#121212] text-[#ded8cc] font-bold text-sm text-center shadow-md transition";
+                skipBtn.textContent = "🚫 Skip Shooting Tonight";
+                skipBtn.onclick = () => {
+                    gameState.vigilanteTarget = null;
+                    document.getElementById('confirmNightActionBtn').disabled = false;
+                    confirmNightAction();
+                };
+                list.appendChild(skipBtn);
+            }
+        }
+
+        function selectNightTarget(targetIdx, activeRole, btnElem) {
+            const list = document.getElementById('nightTargetList');
+            Array.from(list.children).forEach(c => c.classList.remove('bg-[#121212]', 'text-[#ded8cc]', 'border-[#121212]'));
+            btnElem.classList.add('bg-[#121212]', 'text-[#ded8cc]', 'border-[#121212]');
+
+            if (activeRole === 'MAFIA') gameState.mafiaTarget = targetIdx;
+            if (activeRole === 'DOCTOR') gameState.doctorTarget = targetIdx;
+            if (activeRole === 'VIGILANTE') gameState.vigilanteTarget = targetIdx;
+            if (activeRole === 'DETECTIVE') {
+                gameState.detectiveTarget = targetIdx;
+                const targetPlayer = gameState.playerRoles[targetIdx];
+                const detBox = document.getElementById('detectiveResultBox');
+                const detText = document.getElementById('detectiveResultText');
+                detBox.classList.remove('hidden');
+                
+                if (targetPlayer.roleKey === 'MAFIA') {
+                    detText.textContent = `🎯 ${targetPlayer.name} IS MAFIA!`;
+                    detText.className = "text-lg font-black text-red-600";
+                } else {
+                    detText.textContent = `🛡️ ${targetPlayer.name} IS NOT MAFIA (INNOCENT)`;
+                    detText.className = "text-lg font-black text-emerald-700";
+                }
+            }
+
+            document.getElementById('confirmNightActionBtn').disabled = false;
+        }
+
+        function confirmNightAction() {
+            const activeRole = gameState.nightQueue[gameState.nightQueueIndex];
+            if (activeRole === 'VIGILANTE' && gameState.vigilanteTarget !== null) {
+                gameState.vigilanteBulletUsed = true;
+            }
+
+            gameState.nightQueueIndex++;
+            presentNextNightPass();
+        }
+
+        function resolveNightResults() {
+            let casualties = [];
+
+            // Mafia Attack
+            if (gameState.mafiaTarget !== null) {
+                if (gameState.mafiaTarget !== gameState.doctorTarget) {
+                    casualties.push(gameState.mafiaTarget);
+                }
+            }
+
+            // Vigilante Attack
+            if (gameState.vigilanteTarget !== null) {
+                if (gameState.vigilanteTarget !== gameState.doctorTarget) {
+                    if (!casualties.includes(gameState.vigilanteTarget)) {
+                        casualties.push(gameState.vigilanteTarget);
+                    }
+                }
+            }
+
+            // Apply Casualties
+            casualties.forEach(idx => {
+                gameState.playerRoles[idx].isAlive = false;
+            });
+
+            const titleElem = document.getElementById('morningResultTitle');
+            const detailElem = document.getElementById('morningResultDetail');
+
+            if (casualties.length === 0) {
+                titleElem.textContent = "🕊️ Peaceful Night! No Casualties";
+                titleElem.className = "text-lg font-black text-emerald-700";
+                detailElem.textContent = "The Doctor successfully protected the target, or nobody was killed!";
+            } else {
+                const names = casualties.map(idx => gameState.playerRoles[idx].name).join(', ');
+                titleElem.textContent = `💀 Casualties Overnight: ${names}`;
+                titleElem.className = "text-lg font-black text-red-600";
+                detailElem.textContent = `${names} was eliminated during the night!`;
+            }
+
+            showScreen('screenMorning');
+        }
+
+        // TOWN DISCUSSION PHASE
+        function goToDiscussionPhase() {
+            if (checkVictoryConditions()) return;
+
+            document.getElementById('roundBadge').textContent = `Day ${gameState.currentRound} Discussion`;
+            
+            // Pick living first speaker
+            let speakerIdx = Math.floor(Math.random() * gameState.playerRoles.length);
+            while (!gameState.playerRoles[speakerIdx].isAlive) {
+                speakerIdx = (speakerIdx + 1) % gameState.playerRoles.length;
+            }
+            document.getElementById('firstSpeakerName').textContent = gameState.playerRoles[speakerIdx].name;
+
+            gameState.timerSeconds = 180;
+            updateTimerDisplay();
+            showScreen('screenDiscussion');
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(gameState.timerSeconds / 60);
+            const secs = gameState.timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function toggleTimer() {
+            const icon = document.getElementById('timerControlIcon');
+            if (gameState.isTimerRunning) {
+                clearInterval(gameState.timerInterval);
+                gameState.isTimerRunning = false;
+                icon.setAttribute('data-lucide', 'play');
+            } else {
+                gameState.isTimerRunning = true;
+                icon.setAttribute('data-lucide', 'pause');
+                gameState.timerInterval = setInterval(() => {
+                    if (gameState.timerSeconds > 0) {
+                        gameState.timerSeconds--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(gameState.timerInterval);
+                        gameState.isTimerRunning = false;
+                        icon.setAttribute('data-lucide', 'play');
+                    }
+                }, 1000);
+            }
+            lucide.createIcons();
+        }
+
+        function adjustTimer(sec) {
+            gameState.timerSeconds = Math.max(0, gameState.timerSeconds + sec);
+            updateTimerDisplay();
+        }
+
+        // VOTING & TRIAL
+        function goToVoting() {
+            clearInterval(gameState.timerInterval);
+            gameState.isTimerRunning = false;
+            gameState.selectedSuspectIndex = null;
+
+            renderVotingList();
+
+            document.getElementById('eliminationSummary').classList.add('hidden');
+            document.getElementById('confirmEliminationBtn').classList.remove('hidden');
+            document.getElementById('confirmEliminationBtn').disabled = true;
+            document.getElementById('continueNextNightBtn').classList.add('hidden');
+
+            showScreen('screenVoting');
+        }
+
+        function renderVotingList() {
+            const votingList = document.getElementById('votingList');
+            votingList.innerHTML = '';
+
+            gameState.playerRoles.forEach((p, idx) => {
+                const btn = document.createElement('button');
+                if (!p.isAlive) {
+                    btn.disabled = true;
+                    btn.className = 'w-full p-3 rounded-xl bg-[#c3bdae]/30 border border-[#c3bdae]/50 flex items-center justify-between opacity-60 cursor-not-allowed';
+                    btn.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <div class="w-7 h-7 rounded-full bg-[#c3bdae] text-[#666156] font-bold text-xs flex items-center justify-center">${idx + 1}</div>
+                            <span class="font-semibold text-sm text-[#666156] line-through">${p.name}</span>
+                        </div>
+                        <span class="text-[10px] text-[#666156] font-bold uppercase">Dead</span>
+                    `;
+                } else {
+                    const isSelected = gameState.selectedSuspectIndex === idx;
+                    btn.onclick = () => selectSuspect(idx);
+                    btn.className = `w-full p-3.5 rounded-xl flex items-center justify-between border transition ${
+                        isSelected 
+                        ? 'bg-[#121212] text-[#ded8cc] border-[#121212]' 
+                        : 'bg-[#d3ccbe] border-[#c3bdae] hover:border-[#121212] text-[#121212]'
+                    }`;
+                    btn.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-full ${isSelected ? 'bg-[#1a1a1a] text-[#ded8cc]' : 'bg-[#ded8cc] text-[#121212]'} font-bold text-xs flex items-center justify-center">${idx + 1}</div>
+                            <span class="font-bold text-sm ${isSelected ? 'text-[#ded8cc]' : 'text-[#121212]'}">${p.name}</span>
+                        </div>
+                        <span class="text-xs ${isSelected ? 'text-[#ded8cc] font-extrabold' : 'text-[#666156]'} uppercase tracking-wider">${isSelected ? 'Selected' : 'Vote Out'}</span>
+                    `;
+                }
+                votingList.appendChild(btn);
+            });
+        }
+
+        function selectSuspect(idx) {
+            gameState.selectedSuspectIndex = idx;
+            document.getElementById('confirmEliminationBtn').disabled = false;
+            renderVotingList();
+        }
+
+        function confirmElimination() {
+            if (gameState.selectedSuspectIndex === null) return;
+
+            const elimIdx = gameState.selectedSuspectIndex;
+            const p = gameState.playerRoles[elimIdx];
+            p.isAlive = false;
+
+            const summaryBox = document.getElementById('eliminationSummary');
+            const titleElem = document.getElementById('elimResultTitle');
+            const detailElem = document.getElementById('elimResultDetail');
+
+            summaryBox.classList.remove('hidden');
+            document.getElementById('confirmEliminationBtn').classList.add('hidden');
+
+            if (p.roleKey === 'JESTER') {
+                titleElem.textContent = `🤡 ${p.name} was executed!`;
+                titleElem.className = "text-lg font-bold text-purple-700";
+                detailElem.textContent = `${p.name} was the Jester! THEY TRICKED THE TOWN AND WON SOLO!`;
+                triggerConfetti();
+                showOutcome("🤡 JESTER WINS THE GAME SOLO!");
+                return;
+            }
+
+            if (p.roleKey === 'MAFIA') {
+                titleElem.textContent = `🎯 ${p.name} was executed!`;
+                titleElem.className = "text-lg font-bold text-red-600";
+                detailElem.textContent = `${p.name} WAS MAFIA!`;
+            } else {
+                titleElem.textContent = `🚫 ${p.name} was executed!`;
+                titleElem.className = "text-lg font-bold text-[#121212]";
+                detailElem.textContent = `${p.name} was Innocent (${ROLES_INFO[p.roleKey].title}).`;
+            }
+
+            if (!checkVictoryConditions()) {
+                document.getElementById('continueNextNightBtn').classList.remove('hidden');
+                gameState.currentRound++;
+            }
+        }
+
+        function checkVictoryConditions() {
+            let livingMafia = 0;
+            let livingTown = 0;
+
+            gameState.playerRoles.forEach(p => {
+                if (p.isAlive) {
+                    if (p.roleKey === 'MAFIA') livingMafia++;
+                    else livingTown++;
+                }
+            });
+
+            if (livingMafia === 0) {
+                showOutcome("🕊️ TOWN WINS! ALL MAFIA ELIMINATED!");
+                triggerConfetti();
+                return true;
+            }
+
+            if (livingMafia >= livingTown) {
+                showOutcome("💀 MAFIA WINS! THEY OUTNUMBER THE TOWN!");
+                return true;
+            }
+
+            return false;
+        }
+
+        function showOutcome(msg) {
+            const banner = document.getElementById('gameOutcomeBanner');
+            const text = document.getElementById('gameOutcomeText');
+            banner.classList.remove('hidden');
+            text.textContent = msg;
+            text.className = "text-base font-black uppercase tracking-wide text-red-600";
+            document.getElementById('continueNextNightBtn').classList.add('hidden');
+        }
+
+        function revealAndEndGame() {
+            document.getElementById('eliminationSummary').classList.remove('hidden');
+            showOutcome("📢 GAME OVER - SECRET ROLES REVEALED");
+            
+            const votingList = document.getElementById('votingList');
+            votingList.innerHTML = '';
+            gameState.playerRoles.forEach((p, idx) => {
+                const div = document.createElement('div');
+                div.className = "p-3 rounded-xl bg-[#d3ccbe] border border-[#c3bdae] flex items-center justify-between font-bold text-xs";
+                div.innerHTML = `
+                    <span>${idx + 1}. ${p.name}</span>
+                    <span class="px-2 py-0.5 rounded ${ROLES_INFO[p.roleKey].badgeBg}">${ROLES_INFO[p.roleKey].title}</span>
+                `;
+                votingList.appendChild(div);
+            });
+        }
+
+        function triggerConfetti() {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+    </script>
+</body>
+</html>

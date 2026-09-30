@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#ded8cc] text-[#121212] select-none">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fake Artist - Pass the Phone</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #ded8cc;
+            color: #121212;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .glass-panel {
+            background: #d3ccbe;
+            border: 1px solid #c3bdae;
+        }
+        .glass-card {
+            background: #d3ccbe;
+            border: 1px solid #c3bdae;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        canvas { touch-action: none; }
+    </style>
+</head>
+<body class="min-h-full font-sans antialiased bg-[#ded8cc] text-[#121212] flex flex-col justify-between items-center overflow-x-hidden">
+
+    <div id="app" class="max-w-md w-full min-h-screen flex flex-col justify-between p-4 relative">
+        
+        <!-- Header -->
+        <header class="flex items-center justify-between py-3 px-1 z-10 border-b border-[#c3bdae] pb-4">
+            <div class="flex items-center space-x-2.5 cursor-pointer" onclick="goHome()">
+                <div class="w-10 h-10 rounded-xl bg-[#121212] flex items-center justify-center text-[#ded8cc] shadow-md">
+                    <i data-lucide="palette" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-2xl tracking-tight text-[#121212] uppercase leading-none">
+                        FAKE ARTIST
+                    </h1>
+                    <p class="text-[10px] text-[#666156] tracking-widest font-bold uppercase mt-0.5">Party Game</p>
+                </div>
+            </div>
+            
+            <button onclick="openHowToPlay()" title="How to Play" class="p-2.5 rounded-xl bg-[#d3ccbe] border border-[#c3bdae] text-[#121212] hover:bg-[#c8c0b0] transition active:scale-95">
+                <i data-lucide="help-circle" class="w-5 h-5"></i>
+            </button>
+        </header>
+
+        <main class="flex-1 flex flex-col justify-center my-4 z-10">
+            
+            <!-- SCREEN 1: SETUP SCREEN -->
+            <section id="screenSetup" class="flex flex-col space-y-4">
+                <div class="text-center space-y-1">
+                    <h2 class="text-2xl font-black tracking-tight text-[#121212]">Game Setup</h2>
+                    <p class="text-xs font-semibold text-[#666156]">Set players & select category</p>
+                </div>
+
+                <!-- Players Config Card -->
+                <div class="glass-panel p-4 rounded-2xl space-y-3">
+                    <!-- Total Players -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="block text-sm font-bold text-[#121212]">Total Players</span>
+                            <span class="text-xs font-medium text-[#666156]">Min: 3 | Max: 8</span>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-[#1a1a1a] p-1.5 rounded-xl border border-[#121212]">
+                            <button onclick="updatePlayerCount(-1)" class="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#3a3a3a] flex items-center justify-center text-[#ded8cc] font-bold transition active:scale-95">-</button>
+                            <span id="playerCountText" class="font-bold text-lg w-6 text-center text-[#ded8cc]">4</span>
+                            <button onclick="updatePlayerCount(1)" class="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#3a3a3a] flex items-center justify-center text-[#ded8cc] font-bold transition active:scale-95">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Category Selector -->
+                    <div class="pt-2 border-t border-[#c3bdae]">
+                        <span class="block text-xs font-bold uppercase tracking-wider text-[#666156] mb-2">Category</span>
+                        <div id="categoryGrid" class="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto no-scrollbar">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Chaos Mode Toggle -->
+                    <div class="pt-2 border-t border-[#c3bdae] flex items-center justify-between cursor-pointer" onclick="toggleChaosMode()">
+                        <div>
+                            <span class="block text-sm font-bold text-[#121212]">🔥 Chaos Mode</span>
+                            <span class="text-[11px] font-medium text-[#666156]">Randomized Events!</span>
+                        </div>
+                        <div id="chaosToggle" class="w-12 h-6 rounded-full bg-[#c3bdae] transition-colors p-1 flex items-center">
+                            <div id="chaosToggleDot" class="w-4 h-4 rounded-full bg-white transition-transform"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-black text-lg tracking-wide uppercase shadow-lg transition transform active:scale-98 flex items-center justify-center space-x-2">
+                    <span>Start Game</span>
+                    <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+                </button>
+            </section>
+
+            <!-- SCREEN 2: PASS PHONE SCREEN -->
+            <section id="screenPassPhone" class="hidden flex flex-col items-center justify-center text-center space-y-6 py-6">
+                <div class="relative">
+                    <div class="w-24 h-24 rounded-full bg-[#121212]/10 flex items-center justify-center animate-pulse">
+                        <div class="w-16 h-16 rounded-full bg-[#121212]/20 flex items-center justify-center">
+                            <i data-lucide="smartphone" class="w-8 h-8 text-[#121212] animate-bounce"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <p class="text-xs font-bold uppercase tracking-widest text-[#666156]">Pass the phone to</p>
+                    <h2 id="passPlayerName" class="text-4xl font-black text-[#121212] tracking-tight">Player 1</h2>
+                    <p class="text-xs font-medium text-[#666156] max-w-xs mx-auto">Keep phone hidden before revealing your role!</p>
+                </div>
+
+                <button onclick="prepareRevealCard()" class="w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-base shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                    <i data-lucide="eye" class="w-5 h-5"></i>
+                    <span>I am <span id="passPlayerBtnName">Player 1</span> (Reveal)</span>
+                </button>
+            </section>
+
+            <!-- SCREEN 3: SECRET ROLE REVEAL -->
+            <section id="screenRevealCard" class="hidden flex flex-col items-center justify-between space-y-6 py-4">
+                <div class="text-center space-y-1">
+                    <span class="text-xs uppercase tracking-widest text-[#666156] font-bold">Secret Assignment</span>
+                    <h2 id="cardPlayerName" class="text-2xl font-black text-[#121212]">Player 1</h2>
+                </div>
+
+                <div id="secretCard" class="w-full glass-card border border-[#c3bdae] rounded-3xl p-6 flex flex-col items-center justify-center min-h-[220px] text-center relative overflow-hidden transition-all duration-500">
+                    <div id="cardHiddenState" class="flex flex-col items-center space-y-4">
+                        <div class="w-16 h-16 rounded-2xl bg-[#1a1a1a] flex items-center justify-center text-[#ded8cc]">
+                            <i data-lucide="lock" class="w-8 h-8"></i>
+                        </div>
+                        <p class="text-sm text-[#121212] font-semibold">Tap button below to view your secret role!</p>
+                    </div>
+
+                    <div id="cardRevealedState" class="hidden flex flex-col items-center space-y-3 w-full">
+                        <div id="roleBadge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#121212] text-[#ded8cc]">
+                            Real Artist
+                        </div>
+                        <div id="secretRoleText" class="text-3xl font-black text-[#121212] tracking-wide uppercase">
+                            ELEPHANT
+                        </div>
+                        <div class="p-3 bg-[#ded8cc] rounded-xl border border-[#c3bdae] w-full text-xs space-y-1">
+                            <span id="roleHintSubText" class="text-[#121212] font-semibold block leading-snug">
+                                Draw 1 line on your turn without giving away too much!
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full space-y-3">
+                    <button id="toggleRevealBtn" onclick="toggleCardReveal()" class="w-full py-3.5 rounded-xl bg-[#d3ccbe] hover:bg-[#c8c0b0] text-[#121212] font-bold text-sm border border-[#c3bdae] transition flex items-center justify-center gap-2">
+                        <i data-lucide="eye" id="revealIcon" class="w-4 h-4"></i>
+                        <span id="revealBtnText">Show Secret Role</span>
+                    </button>
+
+                    <button id="hideAndPassBtn" onclick="nextPlayerRole()" class="hidden w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-base shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                        <span>Got It! Hide & Pass Phone</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- SCREEN 4: DRAWING CANVAS -->
+            <section id="screenDrawing" class="hidden flex flex-col items-center space-y-3">
+                <div class="flex items-center justify-between w-full px-1">
+                    <div>
+                        <span class="text-[10px] text-[#666156] uppercase tracking-widest font-bold block">Current Artist</span>
+                        <h3 id="currentArtistName" class="text-lg font-black text-[#121212] flex items-center gap-2">
+                            <span id="artistColorIndicator" class="w-3.5 h-3.5 rounded-full inline-block border border-black/20"></span>
+                            <span>Player 1</span>
+                        </h3>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div id="timerContainer" class="hidden text-right">
+                            <span class="text-[10px] text-red-600 uppercase tracking-widest font-bold block">Timer</span>
+                            <span id="timerText" class="text-sm font-black text-red-600">5s</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] text-[#666156] uppercase tracking-widest font-bold block">Round</span>
+                            <span id="drawingRoundText" class="text-sm font-black text-[#121212]">1 of 2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas Wrapper -->
+                <div class="w-full glass-panel rounded-2xl p-2 flex flex-col items-center space-y-2 border-2 border-[#121212]">
+                    <canvas id="drawingCanvas" width="340" height="340" class="bg-[#1a1a1a] rounded-xl border border-[#c3bdae] w-full cursor-crosshair shadow-inner"></canvas>
+                    <p id="canvasInstruction" class="text-[11px] text-[#666156] font-bold">⚠️ Draw <strong class="text-[#121212]">ONE stroke</strong>. Releasing finishes turn!</p>
+                </div>
+
+                <button id="finishStrokeBtn" onclick="passCanvasToNextPlayer()" disabled class="w-full py-4 rounded-2xl bg-[#121212] text-[#ded8cc] font-bold text-base shadow-lg transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Done - Pass to Next Artist
+                </button>
+            </section>
+
+            <!-- SCREEN 5: VOTING SCREEN -->
+            <section id="screenVoting" class="hidden flex flex-col space-y-4">
+                <div class="text-center space-y-1">
+                    <h2 class="text-2xl font-black text-[#121212]">Who is the Fake Artist?</h2>
+                    <p class="text-xs font-semibold text-[#666156]">Discuss the drawing & select a suspect!</p>
+                </div>
+
+                <div id="votingList" class="grid grid-cols-1 gap-2 max-h-56 overflow-y-auto pr-1 no-scrollbar">
+                    <!-- Injected by JS -->
+                </div>
+
+                <div id="eliminationSummary" class="hidden glass-panel p-4 rounded-2xl border-2 border-red-600 text-center space-y-2">
+                    <h3 id="elimResultTitle" class="text-lg font-black text-red-600"></h3>
+                    <p id="elimResultDetail" class="text-xs font-bold text-[#121212]"></p>
+                    <div class="pt-2 border-t border-[#c3bdae] text-xs">
+                        <span class="text-[#666156] font-bold block">The Secret Word Was:</span>
+                        <span id="finalSecretWord" class="text-lg font-black text-[#121212] uppercase tracking-wide"></span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <button id="confirmEliminationBtn" onclick="confirmElimination()" disabled class="w-full py-3.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        Accuse Selected Player
+                    </button>
+                    
+                    <button onclick="goHome()" class="w-full py-2.5 rounded-xl bg-[#d3ccbe] hover:bg-[#c8c0b0] text-[#121212] font-bold text-xs border border-[#c3bdae] transition">
+                        Back to Setup
+                    </button>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Pre-Round Info Countdown Modal -->
+        <div id="preRoundModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div class="glass-panel max-w-sm w-full p-6 rounded-3xl border-2 border-[#121212] space-y-4 shadow-2xl text-center">
+                <div class="w-14 h-14 rounded-2xl bg-[#121212] text-[#ded8cc] flex items-center justify-center mx-auto text-2xl font-black shadow-lg" id="preRoundCountdown">5</div>
+                <div class="space-y-1">
+                    <h3 class="text-xl font-black text-[#121212]">Get Ready to Draw!</h3>
+                    <p class="text-xs text-[#666156] font-medium">Match Briefing & Active Rules</p>
+                </div>
+                <div id="preRoundInfoText" class="text-xs font-bold text-[#121212] space-y-2 bg-[#ded8cc] p-3 rounded-xl border border-[#c3bdae] text-left">
+                    <!-- Info injected via JS -->
+                </div>
+                <p class="text-[10px] uppercase font-black tracking-widest text-[#666156] animate-pulse">Round Starts Automatically...</p>
+            </div>
+        </div>
+
+        <!-- How To Play Modal -->
+        <div id="howToPlayModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-panel max-w-sm w-full p-6 rounded-3xl border-2 border-[#121212] space-y-4 shadow-2xl">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-black text-[#121212] flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-5 h-5 text-[#121212]"></i> How To Play
+                    </h3>
+                    <button onclick="closeHowToPlay()" class="text-[#666156] hover:text-[#121212]">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div class="text-xs text-[#121212] font-medium space-y-2 max-h-80 overflow-y-auto no-scrollbar pr-1">
+                    <p><strong class="font-bold">1. Secret Word:</strong> Everyone gets the exact same word except the Fake Artist(s), who get no word!</p>
+                    <p><strong class="font-bold">2. One Continuous Line:</strong> On your turn, add 1 stroke to the canvas to prove you know the word.</p>
+                    <p><strong class="font-bold">3. Fake Artist Goal:</strong> Bluff and draw strokes that blend in without knowing what the word is!</p>
+                    <p><strong class="font-bold">4. 🔥 Chaos Mode:</strong> Enables randomized events each round! Modifiers (5s Timer, Wild Brush Width) have a 30% chance to happen, with a 10% chance for EVERYTHING to turn on at once! Imposter count can randomly be 0, 1, or multiple!</p>
+                </div>
+                <button onclick="closeHowToPlay()" class="w-full py-3 rounded-xl bg-[#121212] text-[#ded8cc] font-bold text-xs">Got It!</button>
+            </div>
+        </div>
+
+        <!-- Footer with Go to Homepage & ntrxi -->
+        <footer class="text-center text-xs font-semibold text-[#666156] py-4 z-10 space-y-1">
+            <div>Made by <span class="font-bold text-[#121212]">ntrxi</span></div>
+            <div>
+                <a href="https://anormendonca.github.io/games/" target="_blank" class="text-[#121212] font-bold underline hover:opacity-75 transition">
+                    Go to Homepage
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const PLAYER_COLORS = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+
+        const CATEGORIES = [
+            { id: 'animals', name: 'Animals', words: ['Elephant', 'Penguin', 'Giraffe', 'Octopus', 'Kangaroo', 'Owl', 'Dolphin', 'Lion'] },
+            { id: 'food', name: 'Food & Drinks', words: ['Pizza', 'Sushi', 'Tacos', 'Ice Cream', 'Hamburger', 'Donut', 'Coffee', 'Pancakes'] },
+            { id: 'objects', name: 'Objects', words: ['Umbrella', 'Guitar', 'Sunglasses', 'Clock', 'Key', 'Smartphone', 'Bicycle', 'Camera'] },
+            { id: 'places', name: 'Places & Nature', words: ['Beach', 'Volcano', 'Pyramid', 'Eiffel Tower', 'Castle', 'Forest', 'Desert', 'Island'] }
+        ];
+
+        let state = {
+            players: ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
+            selectedCategory: CATEGORIES[0],
+            chaosMode: false,
+            secretWord: '',
+            fakeArtistIndices: [],
+            currentPlayerIndex: 0,
+            drawingRound: 1,
+            maxDrawingRounds: 2,
+            hasDrawnCurrentTurn: false,
+            selectedAccusedIndex: null,
+            timerInterval: null,
+            preRoundInterval: null,
+            timeLeft: 5
+        };
+
+        // Randomized Chaos Event Modifiers for current game
+        let activeChaosEvents = {
+            timer: false,
+            wildStrokes: false,
+            isJackpotAll: false
+        };
+
+        // Canvas variables
+        let canvas, ctx;
+        let isDrawing = false;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderCategoryGrid();
+            setupCanvas();
+            lucide.createIcons();
+        });
+
+        function showScreen(id) {
+            ['screenSetup', 'screenPassPhone', 'screenRevealCard', 'screenDrawing', 'screenVoting'].forEach(s => {
+                document.getElementById(s).classList.add('hidden');
+            });
+            document.getElementById(id).classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function goHome() {
+            clearInterval(state.timerInterval);
+            clearInterval(state.preRoundInterval);
+            document.getElementById('preRoundModal').classList.add('hidden');
+            showScreen('screenSetup');
+        }
+
+        function updatePlayerCount(delta) {
+            let cnt = state.players.length + delta;
+            if (cnt >= 3 && cnt <= 8) {
+                if (delta > 0) state.players.push(`Player ${cnt}`);
+                else state.players.pop();
+                document.getElementById('playerCountText').textContent = cnt;
+            }
+        }
+
+        function toggleChaosMode() {
+            state.chaosMode = !state.chaosMode;
+            const toggle = document.getElementById('chaosToggle');
+            const dot = document.getElementById('chaosToggleDot');
+
+            if (state.chaosMode) {
+                toggle.classList.remove('bg-[#c3bdae]');
+                toggle.classList.add('bg-[#121212]');
+                dot.classList.add('translate-x-6');
+            } else {
+                toggle.classList.remove('bg-[#121212]');
+                toggle.classList.add('bg-[#c3bdae]');
+                dot.classList.remove('translate-x-6');
+            }
+        }
+
+        function renderCategoryGrid() {
+            const grid = document.getElementById('categoryGrid');
+            grid.innerHTML = '';
+            CATEGORIES.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.onclick = () => { state.selectedCategory = cat; renderCategoryGrid(); };
+                const isSelected = state.selectedCategory.id === cat.id;
+                btn.className = `p-2.5 rounded-xl text-left border text-xs font-bold transition ${
+                    isSelected 
+                    ? 'bg-[#121212] text-[#ded8cc] border-[#121212]' 
+                    : 'bg-[#ded8cc] border-[#c3bdae] text-[#121212] hover:bg-[#c8c0b0]'
+                }`;
+                btn.textContent = cat.name;
+                grid.appendChild(btn);
+            });
+        }
+
+        function rollChaosEvents() {
+            if (!state.chaosMode) {
+                activeChaosEvents = { timer: false, wildStrokes: false, isJackpotAll: false };
+                return 1; // standard mode: 1 imposter
+            }
+
+            // 10% chance for ALL events to turn on
+            const isJackpot = Math.random() < 0.10;
+            if (isJackpot) {
+                activeChaosEvents = {
+                    timer: true,
+                    wildStrokes: true,
+                    isJackpotAll: true
+                };
+            } else {
+                // Each modifier has an independent 30% chance
+                activeChaosEvents = {
+                    timer: Math.random() < 0.30,
+                    wildStrokes: Math.random() < 0.30,
+                    isJackpotAll: false
+                };
+            }
+
+            // In Chaos Mode: Imposter count is completely randomized from 0 up to Math.floor(players/2)
+            const maxPossibleImposters = Math.max(1, Math.floor(state.players.length / 2));
+            const imposterCount = Math.floor(Math.random() * (maxPossibleImposters + 1)); // Includes 0!
+
+            return imposterCount;
+        }
+
+        function startGame() {
+            const words = state.selectedCategory.words;
+            state.secretWord = words[Math.floor(Math.random() * words.length)];
+            
+            // Roll Chaos Events & Imposter Count
+            const imposterCount = rollChaosEvents();
+
+            state.fakeArtistIndices = [];
+            while (state.fakeArtistIndices.length < imposterCount) {
+                let idx = Math.floor(Math.random() * state.players.length);
+                if (!state.fakeArtistIndices.includes(idx)) {
+                    state.fakeArtistIndices.push(idx);
+                }
+            }
+
+            state.currentPlayerIndex = 0;
+            state.drawingRound = 1;
+
+            clearCanvas();
+            setupPassPhoneScreen();
+        }
+
+        function setupPassPhoneScreen() {
+            document.getElementById('passPlayerName').textContent = state.players[state.currentPlayerIndex];
+            document.getElementById('passPlayerBtnName').textContent = state.players[state.currentPlayerIndex];
+            showScreen('screenPassPhone');
+        }
+
+        function prepareRevealCard() {
+            document.getElementById('cardPlayerName').textContent = state.players[state.currentPlayerIndex];
+            document.getElementById('cardHiddenState').classList.remove('hidden');
+            document.getElementById('cardRevealedState').classList.add('hidden');
+            document.getElementById('hideAndPassBtn').classList.add('hidden');
+            document.getElementById('revealBtnText').textContent = "Show Secret Role";
+            showScreen('screenRevealCard');
+        }
+
+        function toggleCardReveal() {
+            const hidden = document.getElementById('cardHiddenState');
+            const revealed = document.getElementById('cardRevealedState');
+            const hideBtn = document.getElementById('hideAndPassBtn');
+            const revealText = document.getElementById('revealBtnText');
+            const isFake = state.fakeArtistIndices.includes(state.currentPlayerIndex);
+
+            if (revealed.classList.contains('hidden')) {
+                hidden.classList.add('hidden');
+                revealed.classList.remove('hidden');
+                hideBtn.classList.remove('hidden');
+                revealText.textContent = "Hide Role Card";
+
+                const badge = document.getElementById('roleBadge');
+                const roleText = document.getElementById('secretRoleText');
+                const hintText = document.getElementById('roleHintSubText');
+
+                if (isFake) {
+                    badge.textContent = "FAKE ARTIST";
+                    badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-600 text-white";
+                    roleText.textContent = "YOU ARE CLUELESS!";
+                    roleText.className = "text-2xl font-black text-red-600 tracking-wide uppercase";
+                    hintText.textContent = "You don't know the secret word! Pretend you know it and blend in with your stroke.";
+                } else {
+                    badge.textContent = "REAL ARTIST";
+                    badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#121212] text-[#ded8cc]";
+                    roleText.textContent = state.secretWord;
+                    roleText.className = "text-3xl font-black text-[#121212] tracking-wide uppercase";
+                    hintText.textContent = "Draw 1 stroke on your turn without making the word too obvious!";
+                }
+            } else {
+                hidden.classList.remove('hidden');
+                revealed.classList.add('hidden');
+                revealText.textContent = "Show Secret Role";
+            }
+            lucide.createIcons();
+        }
+
+        function nextPlayerRole() {
+            state.currentPlayerIndex++;
+            if (state.currentPlayerIndex < state.players.length) {
+                setupPassPhoneScreen();
+            } else {
+                state.currentPlayerIndex = 0;
+                startPreRoundCountdown();
+            }
+        }
+
+        function startPreRoundCountdown() {
+            const modal = document.getElementById('preRoundModal');
+            const countdownEl = document.getElementById('preRoundCountdown');
+            const infoTextEl = document.getElementById('preRoundInfoText');
+            
+            let count = 5;
+            countdownEl.textContent = count;
+            
+            let infoHTML = `
+                <div class="flex items-center justify-between pb-1 border-b border-[#c3bdae]">
+                    <span class="text-[#666156]">Category:</span>
+                    <span class="font-black text-[#121212]">${state.selectedCategory.name}</span>
+                </div>
+            `;
+
+            if (state.chaosMode) {
+                if (activeChaosEvents.isJackpotAll) {
+                    infoHTML += `
+                        <div class="p-1.5 bg-red-600 text-white rounded-lg text-center font-black tracking-wider uppercase">
+                            🔥 MAXIMUM CHAOS JACKPOT! (ALL EVENTS ACTIVE) 🔥
+                        </div>
+                    `;
+                }
+
+                infoHTML += `
+                    <div class="flex items-center justify-between ${activeChaosEvents.timer ? 'text-red-600 font-bold' : 'text-gray-400 opacity-60'}">
+                        <span>⚡ 5s Speed Timer:</span>
+                        <span>${activeChaosEvents.timer ? 'ON' : 'OFF'}</span>
+                    </div>
+                    <div class="flex items-center justify-between ${activeChaosEvents.wildStrokes ? 'text-red-600 font-bold' : 'text-gray-400 opacity-60'}">
+                        <span>🖌️ Wild Stroke Widths:</span>
+                        <span>${activeChaosEvents.wildStrokes ? 'ON' : 'OFF'}</span>
+                    </div>
+                `;
+            } else {
+                infoHTML += `
+                    <div class="flex items-center justify-between text-emerald-800">
+                        <span>Mode:</span>
+                        <span class="font-black">Standard Game</span>
+                    </div>
+                `;
+            }
+
+            infoTextEl.innerHTML = infoHTML;
+            modal.classList.remove('hidden');
+
+            clearInterval(state.preRoundInterval);
+            state.preRoundInterval = setInterval(() => {
+                count--;
+                countdownEl.textContent = count;
+                if (count <= 0) {
+                    clearInterval(state.preRoundInterval);
+                    modal.classList.add('hidden');
+                    startDrawingTurn();
+                }
+            }, 1000);
+        }
+
+        function setupCanvas() {
+            canvas = document.getElementById('drawingCanvas');
+            ctx = canvas.getContext('2d');
+            
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            const getPos = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: (clientX - rect.left) * (canvas.width / rect.width),
+                    y: (clientY - rect.top) * (canvas.height / rect.height)
+                };
+            };
+
+            const startDraw = (e) => {
+                if (state.hasDrawnCurrentTurn) return;
+                isDrawing = true;
+                const pos = getPos(e);
+                ctx.strokeStyle = PLAYER_COLORS[state.currentPlayerIndex % PLAYER_COLORS.length];
+                
+                // Wild stroke width if active
+                if (activeChaosEvents.wildStrokes) {
+                    ctx.lineWidth = Math.floor(Math.random() * 16) + 2;
+                } else {
+                    ctx.lineWidth = 5;
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+            };
+
+            const draw = (e) => {
+                if (!isDrawing) return;
+                const pos = getPos(e);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            };
+
+            const endDraw = () => {
+                if (isDrawing) {
+                    isDrawing = false;
+                    state.hasDrawnCurrentTurn = true;
+                    document.getElementById('finishStrokeBtn').disabled = false;
+                    clearInterval(state.timerInterval);
+                }
+            };
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', endDraw);
+
+            canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); });
+            canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+            canvas.addEventListener('touchend', endDraw);
+        }
+
+        function clearCanvas() {
+            if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function startDrawingTurn() {
+            state.hasDrawnCurrentTurn = false;
+            document.getElementById('finishStrokeBtn').disabled = true;
+
+            const currPlayer = state.players[state.currentPlayerIndex];
+            const color = PLAYER_COLORS[state.currentPlayerIndex % PLAYER_COLORS.length];
+
+            document.getElementById('currentArtistName').querySelector('span:nth-child(2)').textContent = currPlayer;
+            document.getElementById('artistColorIndicator').style.backgroundColor = color;
+            document.getElementById('drawingRoundText').textContent = `${state.drawingRound} of ${state.maxDrawingRounds}`;
+
+            // Handle 5-second timer if active
+            const timerContainer = document.getElementById('timerContainer');
+            if (activeChaosEvents.timer) {
+                timerContainer.classList.remove('hidden');
+                state.timeLeft = 5;
+                document.getElementById('timerText').textContent = `${state.timeLeft}s`;
+                
+                clearInterval(state.timerInterval);
+                state.timerInterval = setInterval(() => {
+                    state.timeLeft--;
+                    document.getElementById('timerText').textContent = `${state.timeLeft}s`;
+                    if (state.timeLeft <= 0) {
+                        clearInterval(state.timerInterval);
+                        isDrawing = false;
+                        state.hasDrawnCurrentTurn = true;
+                        passCanvasToNextPlayer();
+                    }
+                }, 1000);
+            } else {
+                timerContainer.classList.add('hidden');
+            }
+
+            showScreen('screenDrawing');
+        }
+
+        function passCanvasToNextPlayer() {
+            clearInterval(state.timerInterval);
+            state.currentPlayerIndex++;
+            if (state.currentPlayerIndex >= state.players.length) {
+                state.currentPlayerIndex = 0;
+                state.drawingRound++;
+            }
+
+            if (state.drawingRound > state.maxDrawingRounds) {
+                setupVoting();
+            } else {
+                startDrawingTurn();
+            }
+        }
+
+        function setupVoting() {
+            state.selectedAccusedIndex = null;
+            document.getElementById('eliminationSummary').classList.add('hidden');
+            
+            const btn = document.getElementById('confirmEliminationBtn');
+            btn.classList.remove('hidden');
+            btn.disabled = true;
+
+            renderVotingList();
+            showScreen('screenVoting');
+        }
+
+        function selectSuspect(idx) {
+            state.selectedAccusedIndex = idx;
+            document.getElementById('confirmEliminationBtn').disabled = false;
+            renderVotingList();
+        }
+
+        function renderVotingList() {
+            const list = document.getElementById('votingList');
+            list.innerHTML = '';
+
+            state.players.forEach((p, idx) => {
+                const isSelected = state.selectedAccusedIndex === idx;
+                const button = document.createElement('button');
+                button.onclick = () => selectSuspect(idx);
+                button.className = `w-full p-3.5 rounded-xl flex items-center justify-between border transition ${
+                    isSelected 
+                    ? 'bg-[#121212] text-[#ded8cc] border-[#121212]' 
+                    : 'bg-[#d3ccbe] border-[#c3bdae] hover:border-[#121212] text-[#121212]'
+                }`;
+                button.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="w-4 h-4 rounded-full shrink-0 border border-black/20" style="background-color: ${PLAYER_COLORS[idx % PLAYER_COLORS.length]}"></span>
+                        <span class="font-bold text-sm">${p}</span>
+                    </div>
+                    <span class="text-xs uppercase tracking-wider font-extrabold ${isSelected ? 'text-[#ded8cc]' : 'text-[#666156]'}">
+                        ${isSelected ? 'Selected' : 'Accuse'}
+                    </span>
+                `;
+                list.appendChild(button);
+            });
+        }
+
+        function confirmElimination() {
+            if (state.selectedAccusedIndex === null) return;
+
+            const accusedName = state.players[state.selectedAccusedIndex];
+            const summary = document.getElementById('eliminationSummary');
+
+            summary.classList.remove('hidden');
+            document.getElementById('confirmEliminationBtn').classList.add('hidden');
+            document.getElementById('finalSecretWord').textContent = state.secretWord;
+
+            // Scenario: ZERO Imposters
+            if (state.fakeArtistIndices.length === 0) {
+                document.getElementById('elimResultTitle').textContent = "😱 ZERO IMPOSTERS!";
+                document.getElementById('elimResultTitle').className = "text-lg font-black text-amber-600";
+                document.getElementById('elimResultDetail').textContent = `There were 0 Fake Artists this round! Everyone was a Real Artist, but you turned on ${accusedName} anyway! Paranoia wins!`;
+                return;
+            }
+
+            const isFake = state.fakeArtistIndices.includes(state.selectedAccusedIndex);
+            const fakeNames = state.fakeArtistIndices.map(i => state.players[i]).join(', ');
+
+            if (isFake) {
+                document.getElementById('elimResultTitle').textContent = "🎨 FAKE ARTIST CAUGHT!";
+                document.getElementById('elimResultTitle').className = "text-lg font-black text-emerald-700";
+                document.getElementById('elimResultDetail').textContent = `${accusedName} was indeed a Fake Artist! Real artists win! (Fakes: ${fakeNames})`;
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            } else {
+                document.getElementById('elimResultTitle').textContent = "❌ WRONG ACCUSATION!";
+                document.getElementById('elimResultTitle').className = "text-lg font-black text-red-600";
+                document.getElementById('elimResultDetail').textContent = `${accusedName} was a Real Artist! The Fake Artist(s) (${fakeNames}) win!`;
+            }
+        }
+
+        function openHowToPlay() { document.getElementById('howToPlayModal').classList.remove('hidden'); }
+        function closeHowToPlay() { document.getElementById('howToPlayModal').classList.add('hidden'); }
+    </script>
+</body>
+</html>

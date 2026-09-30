@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#ded8cc] text-[#121212]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imposter - Pass the Phone Party Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        theme: {
+                            bg: '#ded8cc',
+                            cardBg: '#d3ccbe',
+                            textDark: '#121212',
+                            muted: '#666156',
+                            line: '#c3bdae',
+                            darkBg: '#121212',
+                            pillDark: '#1a1a1a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #ded8cc;
+            color: #121212;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .glass-panel {
+            background: #d3ccbe;
+            border: 1px solid #c3bdae;
+        }
+        .glass-card {
+            background: #d3ccbe;
+            border: 1px solid #c3bdae;
+        }
+        .dark-card {
+            background: #1a1a1a;
+            color: #ded8cc;
+        }
+        .neon-border-purple {
+            border-color: #121212;
+            box-shadow: 0 4px 12px rgba(18, 18, 18, 0.08);
+        }
+        .neon-border-red {
+            border-color: #dc2626;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="min-h-full font-sans antialiased bg-[#ded8cc] text-[#121212] flex flex-col justify-between items-center select-none overflow-x-hidden">
+
+    <div id="app" class="max-w-md w-full min-h-screen flex flex-col justify-between p-4 relative">
+        
+        <!-- Global Header -->
+        <header class="flex items-center justify-between py-3 px-1 z-10 border-b border-[#c3bdae] pb-4">
+            <div class="flex items-center space-x-2.5 cursor-pointer" onclick="goHome()">
+                <div class="w-10 h-10 rounded-xl bg-[#121212] flex items-center justify-center text-[#ded8cc] shadow-md">
+                    <i data-lucide="ghost" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-2xl tracking-tight text-[#121212] uppercase leading-none">
+                        IMPOSTER
+                    </h1>
+                    <p class="text-[10px] text-[#666156] tracking-widest font-bold uppercase mt-0.5">Pass The Phone</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <button onclick="openHowToPlay()" class="p-2.5 rounded-xl bg-[#d3ccbe] border border-[#c3bdae] text-[#121212] hover:bg-[#c8c0b0] transition">
+                    <i data-lucide="help-circle" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 flex flex-col justify-center my-4 z-10">
+            
+            <!-- SCREEN 1: SETUP SCREEN -->
+            <section id="screenSetup" class="flex flex-col space-y-4">
+                <!-- Header Banner -->
+                <div class="text-center space-y-1">
+                    <h2 class="text-2xl font-black tracking-tight text-[#121212]">Game Setup</h2>
+                    <p class="text-xs font-semibold text-[#666156]">Configure players and choose your category</p>
+                </div>
+
+                <!-- Players Configuration Card -->
+                <div class="glass-panel p-4 rounded-2xl space-y-3">
+                    <!-- Player Count Selector -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="block text-sm font-bold text-[#121212]">Players</span>
+                            <span class="text-xs font-medium text-[#666156]">Min: 3 | Max: 12</span>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-[#1a1a1a] p-1.5 rounded-xl border border-[#121212]">
+                            <button onclick="updatePlayerCount(-1)" class="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#3a3a3a] flex items-center justify-center text-[#ded8cc] font-bold transition active:scale-95">-</button>
+                            <span id="playerCountText" class="font-bold text-lg w-6 text-center text-[#ded8cc]">4</span>
+                            <button onclick="updatePlayerCount(1)" class="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#3a3a3a] flex items-center justify-center text-[#ded8cc] font-bold transition active:scale-95">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Imposters Count Selector -->
+                    <div class="flex items-center justify-between pt-2 border-t border-[#c3bdae]">
+                        <div>
+                            <span class="block text-sm font-bold text-[#121212]">Imposters</span>
+                            <span class="text-xs font-medium text-[#666156]" id="imposterLimitHint">Max 1 for under 6 players</span>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-[#1a1a1a] p-1.5 rounded-xl border border-[#121212]">
+                            <button onclick="updateImposterCount(-1)" class="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#3a3a3a] flex items-center justify-center text-red-400 font-bold transition active:scale-95">-</button>
+                            <span id="imposterCountText" class="font-bold text-lg w-6 text-center text-red-400">1</span>
+                            <button onclick="updateImposterCount(1)" class="w-8 h-8 rounded-lg bg-[#2a2a2a] hover:bg-[#3a3a3a] flex items-center justify-center text-red-400 font-bold transition active:scale-95">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Imposter Hint Toggle -->
+                    <div class="flex items-center justify-between pt-2 border-t border-[#c3bdae]">
+                        <div>
+                            <span class="block text-sm font-bold text-[#121212]">Imposter Hint</span>
+                            <span class="text-xs font-medium text-[#666156]">Gives Imposter broad topic clue</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="imposterHintToggle" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-[#c3bdae] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#121212]"></div>
+                        </label>
+                    </div>
+
+                    <!-- Chaos Mode Toggle with Info Button -->
+                    <div class="flex items-center justify-between pt-2 border-t border-[#c3bdae]">
+                        <div class="flex items-center gap-1.5">
+                            <div>
+                                <span class="block text-sm font-bold text-[#121212]">Chaos Mode (Random Events)</span>
+                                <span class="text-xs font-medium text-[#666156]">Adds unpredictable game twists</span>
+                            </div>
+                            <button onclick="openChaosInfoModal()" class="text-[#121212] hover:opacity-70 p-1 rounded-lg transition" title="Chaos Mode Details">
+                                <i data-lucide="info" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input type="checkbox" id="chaosModeToggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-[#c3bdae] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                        </label>
+                    </div>
+
+                    <!-- Editable Player Names Container -->
+                    <div class="pt-2 border-t border-[#c3bdae]">
+                        <button onclick="togglePlayerNamesList()" class="flex items-center justify-between w-full text-xs font-bold text-[#121212]">
+                            <span class="flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4"></i> Customize Player Names</span>
+                            <i data-lucide="chevron-down" id="namesChevron" class="w-4 h-4 transition-transform"></i>
+                        </button>
+                        <div id="playerNamesContainer" class="hidden grid grid-cols-2 gap-2 mt-3 max-h-36 overflow-y-auto pr-1 no-scrollbar">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Unified Category Selection Panel -->
+                <div class="glass-panel p-4 rounded-2xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="block text-sm font-bold text-[#121212]">Select Category</span>
+                        <button onclick="selectRandomCategory()" class="px-3 py-1.5 rounded-lg bg-[#121212] hover:bg-[#2a2a2a] text-xs font-bold text-[#ded8cc] flex items-center gap-1 shadow-sm transition">
+                            <span>🎲 Random Category</span>
+                        </button>
+                    </div>
+
+                    <div id="categoryGrid" class="grid grid-cols-2 gap-2.5 max-h-56 overflow-y-auto pr-1 no-scrollbar">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Start Game Button -->
+                <button onclick="startGame()" class="w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-black text-lg tracking-wide uppercase shadow-lg transition transform active:scale-98 flex items-center justify-center space-x-2">
+                    <span>Start Game</span>
+                    <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+                </button>
+            </section>
+
+            <!-- SCREEN 2: PASS PHONE INTERMEDIATE SCREEN -->
+            <section id="screenPassPhone" class="hidden flex flex-col items-center justify-center text-center space-y-6 py-6">
+                <div class="relative">
+                    <div class="w-24 h-24 rounded-full bg-[#121212]/10 flex items-center justify-center animate-pulse">
+                        <div class="w-16 h-16 rounded-full bg-[#121212]/20 flex items-center justify-center">
+                            <i data-lucide="smartphone" class="w-8 h-8 text-[#121212] animate-bounce"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <p class="text-xs font-bold uppercase tracking-widest text-[#666156]">Pass the Phone to</p>
+                    <h2 id="passPlayerName" class="text-4xl font-black text-[#121212] tracking-tight">Player 1</h2>
+                    <p class="text-xs font-medium text-[#666156] max-w-xs mx-auto">Ensure privacy before revealing your secret role!</p>
+                </div>
+
+                <button onclick="prepareRevealCard()" class="w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-base shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                    <i data-lucide="eye" class="w-5 h-5"></i>
+                    <span>I am <span id="passPlayerBtnName">Player 1</span> (Reveal)</span>
+                </button>
+            </section>
+
+            <!-- SCREEN 3: REVEAL ROLE CARD SCREEN -->
+            <section id="screenRevealCard" class="hidden flex flex-col items-center justify-between h-full space-y-6 py-4">
+                <div class="text-center space-y-1">
+                    <span class="text-xs uppercase tracking-widest text-[#666156] font-bold">Secret Role Card</span>
+                    <h2 id="cardPlayerName" class="text-2xl font-black text-[#121212]">Player 1</h2>
+                </div>
+
+                <!-- Secret Card Component -->
+                <div id="secretCard" class="w-full glass-card border border-[#c3bdae] rounded-3xl p-6 flex flex-col items-center justify-center min-h-[260px] text-center relative overflow-hidden transition-all duration-500">
+                    
+                    <!-- Unrevealed State -->
+                    <div id="cardHiddenState" class="flex flex-col items-center space-y-4">
+                        <div class="w-16 h-16 rounded-2xl bg-[#1a1a1a] flex items-center justify-center text-[#ded8cc]">
+                            <i data-lucide="lock" class="w-8 h-8"></i>
+                        </div>
+                        <p class="text-sm text-[#121212] font-semibold">Tap button below to show your secret role!</p>
+                    </div>
+
+                    <!-- Revealed State -->
+                    <div id="cardRevealedState" class="hidden flex flex-col items-center space-y-3 w-full">
+                        <div id="roleBadge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#121212] text-[#ded8cc]">
+                            Innocent
+                        </div>
+
+                        <!-- Secret Word / Status -->
+                        <div class="py-2 w-full">
+                            <span class="text-xs text-[#666156] font-bold block mb-1">Secret Word / Status</span>
+                            <div id="secretRoleText" class="text-2xl font-black text-[#121212] tracking-wide break-words">
+                                CHERRY BLOSSOM
+                            </div>
+                        </div>
+
+                        <!-- Category / Hint Display -->
+                        <div class="p-3 bg-[#ded8cc] rounded-xl border border-[#c3bdae] w-full text-xs space-y-1">
+                            <span id="hintTitleLabel" class="text-[#666156] font-bold block">Category</span>
+                            <span id="hintValueText" class="text-[#121212] font-black text-sm block">Places & Landmarks</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="w-full space-y-3">
+                    <button id="toggleRevealBtn" onclick="toggleCardReveal()" class="w-full py-3.5 rounded-xl bg-[#d3ccbe] hover:bg-[#c8c0b0] text-[#121212] font-bold text-sm border border-[#c3bdae] transition flex items-center justify-center gap-2">
+                        <i data-lucide="eye" id="revealIcon" class="w-4 h-4"></i>
+                        <span id="revealBtnText">Show Secret Role</span>
+                    </button>
+
+                    <button id="hideAndPassBtn" onclick="nextPlayerRole()" class="hidden w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-base shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                        <span>Got It! Hide & Pass Phone</span>
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- SCREEN 4: DISCUSSION & TIMER SCREEN -->
+            <section id="screenDiscussion" class="hidden flex flex-col items-center justify-between space-y-5">
+                <div class="text-center space-y-1">
+                    <div class="flex items-center justify-center gap-2">
+                        <span id="roundBadge" class="px-3 py-1 rounded-full bg-[#121212] text-[#ded8cc] text-xs font-bold">
+                            Round 1
+                        </span>
+                    </div>
+                    <h2 class="text-2xl font-black text-[#121212]">Discussion Phase</h2>
+                    <p class="text-xs font-semibold text-[#666156]">Place phone in center. Ask questions & find the imposter!</p>
+                </div>
+
+                <!-- First Speaker Badge -->
+                <div class="w-full glass-panel p-4 rounded-2xl text-center space-y-1">
+                    <span class="text-[11px] font-bold tracking-wider uppercase text-[#666156]">First Speaker Selected</span>
+                    <div class="flex items-center justify-center gap-2 text-xl font-black text-[#121212]">
+                        <i data-lucide="message-square" class="w-5 h-5"></i>
+                        <span id="firstSpeakerName">Player X</span>
+                    </div>
+                    <p class="text-[11px] font-semibold text-[#666156]">This player starts by asking anyone a question!</p>
+                </div>
+
+                <!-- Timer Widget Card -->
+                <div class="w-full dark-card p-5 rounded-2xl flex flex-col items-center space-y-3">
+                    <div id="timerDisplay" class="text-5xl font-black text-[#ded8cc] tracking-widest font-mono">
+                        03:00
+                    </div>
+
+                    <!-- Timer Controls -->
+                    <div class="flex items-center space-x-3">
+                        <button onclick="adjustTimer(-30)" class="px-3 py-1.5 rounded-lg bg-[#2a2a2a] text-xs font-bold text-[#ded8cc] hover:bg-[#3a3a3a]">-30s</button>
+                        <button id="playPauseTimerBtn" onclick="toggleTimer()" class="p-3 rounded-xl bg-[#ded8cc] text-[#121212] font-bold transition">
+                            <i data-lucide="play" id="timerControlIcon" class="w-5 h-5"></i>
+                        </button>
+                        <button onclick="adjustTimer(30)" class="px-3 py-1.5 rounded-lg bg-[#2a2a2a] text-xs font-bold text-[#ded8cc] hover:bg-[#3a3a3a]">+30s</button>
+                    </div>
+                </div>
+
+                <!-- Action Button to proceed to Voting -->
+                <button onclick="goToVoting()" class="w-full py-4 rounded-2xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-base shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                    <i data-lucide="vote" class="w-5 h-5"></i>
+                    <span>Proceed to Voting / Elimination</span>
+                </button>
+            </section>
+
+            <!-- SCREEN 5: VOTING & ELIMINATION SCREEN -->
+            <section id="screenVoting" class="hidden flex flex-col space-y-4">
+                <div class="text-center space-y-1">
+                    <h2 class="text-2xl font-black text-[#121212]">Eliminate a Suspect</h2>
+                    <p class="text-xs font-semibold text-[#666156]">Vote off who you suspect is the Imposter</p>
+                </div>
+
+                <!-- Active Players Voting List -->
+                <div id="votingList" class="grid grid-cols-1 gap-2 max-h-56 overflow-y-auto pr-1 no-scrollbar">
+                    <!-- JS Injected Player Buttons -->
+                </div>
+
+                <!-- Round & Elimination Summary Banner -->
+                <div id="eliminationSummary" class="hidden glass-panel p-4 rounded-2xl border-2 border-red-600 space-y-2 text-center">
+                    <h3 id="elimResultTitle" class="text-lg font-bold text-red-600">
+                        Player Eliminated!
+                    </h3>
+                    <p id="elimResultDetail" class="text-xs font-bold text-[#121212]">
+                        Player X was eliminated.
+                    </p>
+                    <div id="gameOutcomeBanner" class="hidden pt-2 border-t border-[#c3bdae]">
+                        <p id="gameOutcomeText" class="text-base font-black uppercase tracking-wide"></p>
+                        <div class="mt-2 p-2 bg-[#ded8cc] rounded-xl border border-[#c3bdae] text-xs">
+                            <span class="text-[#666156] font-bold block">The Secret Word Was:</span>
+                            <span id="finalSecretWord" class="text-sm font-black text-[#121212]">SECRET WORD</span>
+                            <span id="finalCategoryName" class="text-[10px] text-[#666156] block mt-0.5"></span>
+                            <span id="finalEventName" class="text-[10px] text-amber-700 block mt-1 font-bold"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Action Controls for Multi-round -->
+                <div id="votingActionControls" class="space-y-2">
+                    <button id="confirmEliminationBtn" onclick="confirmElimination()" class="w-full py-3.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        Eliminate Selected Player
+                    </button>
+                    
+                    <button id="continueNextRoundBtn" onclick="continueToNextRound()" class="hidden w-full py-3.5 rounded-xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-sm shadow-md transition">
+                        Start Next Round
+                    </button>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="revealAndEndGame()" class="py-2.5 rounded-xl bg-[#d3ccbe] hover:bg-[#c8c0b0] text-[#121212] font-bold text-xs border border-[#c3bdae] transition">
+                            End & Reveal All
+                        </button>
+                        <button onclick="goHome()" class="py-2.5 rounded-xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-xs shadow-md transition">
+                            New Game Setup
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- How To Play Modal -->
+        <div id="howToPlayModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-panel max-w-sm w-full p-6 rounded-3xl border-2 border-[#121212] space-y-4 shadow-2xl">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-black text-[#121212] flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-5 h-5 text-[#121212]"></i> How To Play
+                    </h3>
+                    <button onclick="closeHowToPlay()" class="text-[#666156] hover:text-[#121212]">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div class="text-xs text-[#121212] font-medium space-y-2.5 max-h-80 overflow-y-auto no-scrollbar pr-1">
+                    <p><strong class="font-bold">1. Pass Phone:</strong> Pass the phone around so each player can secretly reveal their role on the card.</p>
+                    <p><strong class="font-bold">2. Innocents:</strong> Learn the secret word. Give subtle clues to prove you know it without spoiling it for the Imposter!</p>
+                    <p><strong class="font-bold">3. Imposter:</strong> You do NOT know the secret word. Blend in, listen closely, and fake your clues!</p>
+                    <p><strong class="font-bold">4. Discussion & Vote:</strong> Discuss, ask questions, and vote to eliminate a suspect. Play continues across rounds until Imposters or Innocents win!</p>
+                </div>
+                <button onclick="closeHowToPlay()" class="w-full py-3 rounded-xl bg-[#121212] text-[#ded8cc] font-bold text-xs">Got It!</button>
+            </div>
+        </div>
+
+        <!-- Chaos Mode Info Modal -->
+        <div id="chaosInfoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-panel max-w-sm w-full p-6 rounded-3xl border-2 border-[#121212] space-y-4 shadow-2xl">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-black text-[#121212] flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-amber-600"></i> Chaos Mode Info
+                    </h3>
+                    <button onclick="closeChaosInfoModal()" class="text-[#666156] hover:text-[#121212]">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Warning Banner -->
+                <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-600/30 text-amber-900 text-xs space-y-1">
+                    <div class="flex items-center gap-1.5 font-bold">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-700 shrink-0"></i>
+                        <span>Warning: Mystery Spoilers</span>
+                    </div>
+                    <p class="text-[11px] leading-tight font-medium">
+                        Knowing the exact mechanics of Chaos Mode may ruin the mystery and fun of unpredictable game moments!
+                    </p>
+                </div>
+                
+                <div class="space-y-2.5 text-xs text-[#121212] font-medium">
+                    <p class="font-bold">What Chaos Mode can do when enabled:</p>
+                    <ul class="list-disc pl-4 space-y-1.5">
+                        <li>Secret random events can trigger dynamically (such as Everyone is an Imposter, Everyone has the Secret Word, or standard Imposter game).</li>
+                        <li>Imposters STILL NEVER see the real word — they only receive a subtle general hint to keep their cover intact.</li>
+                        <li>The exact event type remains completely hidden from all players until the final reveal at the end of the game!</li>
+                    </ul>
+                </div>
+
+                <button onclick="closeChaosInfoModal()" class="w-full py-3 rounded-xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-xs">Got It!</button>
+            </div>
+        </div>
+
+        <!-- Custom Topic Modal with TXT Notepad Import / Export -->
+        <div id="customTopicModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-panel max-w-sm w-full p-6 rounded-3xl border-2 border-[#121212] space-y-4 shadow-2xl">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-black text-[#121212] flex items-center gap-2">
+                        <i data-lucide="pen-tool" class="w-5 h-5 text-[#121212]"></i> Custom Topics
+                    </h3>
+                    <button onclick="closeCustomModal()" class="text-[#666156] hover:text-[#121212]">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Warning Banner -->
+                <div class="p-2.5 rounded-xl bg-[#ded8cc] border border-[#c3bdae] text-[#121212] text-[11px] flex items-start gap-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0 mt-0.5 text-amber-700"></i>
+                    <span><strong>Note:</strong> Custom topics reset on browser refresh! Save your words by exporting to a <code>.txt</code> file below.</span>
+                </div>
+                
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="text-[#121212] font-bold block mb-1">Category / Group Name</label>
+                        <input type="text" id="customCatName" placeholder="e.g. Inside Jokes" class="w-full p-2.5 rounded-xl bg-[#ded8cc] border border-[#c3bdae] text-[#121212] font-medium focus:outline-none focus:border-[#121212]">
+                    </div>
+                    <div>
+                        <label class="text-[#121212] font-bold block mb-1">Word List (One item per line)</label>
+                        <textarea id="customWordsArea" rows="4" placeholder="Pineapple Pizza&#10;Laser Tag&#10;Secret Hideout" class="w-full p-2.5 rounded-xl bg-[#ded8cc] border border-[#c3bdae] text-[#121212] font-medium focus:outline-none focus:border-[#121212] no-scrollbar"></textarea>
+                    </div>
+
+                    <!-- Import / Export Actions -->
+                    <div class="flex items-center gap-2 pt-1">
+                        <label class="flex-1 py-2 px-3 rounded-xl bg-[#ded8cc] hover:bg-[#c8c0b0] text-[#121212] font-bold text-[11px] border border-[#c3bdae] cursor-pointer text-center">
+                            <span>📥 Import .TXT</span>
+                            <input type="file" id="importTxtInput" accept=".txt" onchange="importTxtFile(event)" class="hidden">
+                        </label>
+                        <button onclick="exportTxtFile()" class="flex-1 py-2 px-3 rounded-xl bg-[#ded8cc] hover:bg-[#c8c0b0] text-[#121212] font-bold text-[11px] border border-[#c3bdae] text-center">
+                            📤 Export .TXT
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="saveCustomTopic()" class="w-full py-3 rounded-xl bg-[#121212] hover:bg-[#2a2a2a] text-[#ded8cc] font-bold text-xs">Save Custom Category</button>
+            </div>
+        </div>
+
+        <!-- Footer with Go to Homepage & ntrxi -->
+        <footer class="text-center text-xs font-semibold text-[#666156] py-4 z-10 space-y-1">
+            <div>Made by <span class="font-bold text-[#121212]">ntrxi</span></div>
+            <div>
+                <a href="https://anormendonca.github.io/games/" target="_blank" class="text-[#121212] font-bold underline hover:opacity-75 transition">
+                    Go to Homepage
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Clean unified category dataset
+        const CATEGORIES_DATA = [
+            { id: 'food', name: 'Food & Drinks', icon: 'utensils', words: ['Sushi', 'Pizza', 'Tacos', 'Cheeseburger', 'Ice Cream', 'Ramen', 'Pancakes', 'Croissant', 'Espresso', 'Bubble Tea', 'Hot Dog', 'Spaghetti', 'Donut', 'Guacamole', 'Smoothie', 'Falafel', 'Lasagna', 'Steak', 'Waffles', 'Dim Sum'] },
+            { id: 'animals', name: 'Animals & Wildlife', icon: 'dog', words: ['Penguin', 'Kangaroo', 'Octopus', 'Giraffe', 'Panda', 'Cheetah', 'Flamingo', 'Chameleon', 'Dolphin', 'Owl', 'Sloth', 'Humpback Whale', 'Platypus', 'Koala', 'Capybara', 'Chimpanzee', 'Peacock', 'Electric Eel', 'Red Panda', 'Meerkat'] },
+            { id: 'places', name: 'Places & Landmarks', icon: 'map-pin', words: ['Eiffel Tower', 'Grand Canyon', 'Times Square', 'Great Wall of China', 'Colosseum', 'Taj Mahal', 'Machu Picchu', 'Statue of Liberty', 'Mount Everest', 'Sydney Opera House', 'Pyramids of Giza', 'Niagara Falls', 'Venice Canals', 'Stonehenge', 'Santorini', 'Hollywood Walk of Fame', 'Burj Khalifa', 'Yellowstone', 'Louvre Museum', 'Big Ben'] },
+            { id: 'objects', name: 'Everyday Objects', icon: 'box', words: ['Smartphone', 'Sunglasses', 'Headphones', 'Coffee Mug', 'Backpack', 'Umbrella', 'Wristwatch', 'Keyring', 'Toothbrush', 'Water Bottle', 'Scented Candle', 'Scissors', 'Desk Lamp', 'Notebook', 'Hairdryer', 'Wallet', 'Television Remote', 'Mirror', 'Stapler', 'Pillow'] },
+            { id: 'movies', name: 'Movies & Cinema', icon: 'film', words: ['Titanic', 'Avatar', 'Jurassic Park', 'The Matrix', 'Inception', 'Star Wars', 'Harry Potter', 'The Avengers', 'Spider-Man', 'Shrek', 'Back to the Future', 'Interstellar', 'Gladiator', 'The Lion King', 'Finding Nemo', 'Jaws', 'Toy Story', 'Frozen', 'Pulp Fiction', 'The Dark Knight'] },
+            { id: 'sports', name: 'Sports & Games', icon: 'trophy', words: ['Basketball', 'Soccer', 'Tennis', 'Bowling', 'Skateboarding', 'Formula 1', 'Golf', 'Surfing', 'Volleyball', 'Ice Hockey', 'Baseball', 'Badminton', 'Archery', 'Rock Climbing', 'Table Tennis', 'Snowboarding', 'Boxing', 'Rugby', 'Cricket', 'Gymnastics'] },
+            { id: 'professions', name: 'Professions & Jobs', icon: 'briefcase', words: ['Astronaut', 'Firefighter', 'Chef', 'Surgeon', 'Pilot', 'Detective', 'Architect', 'Software Engineer', 'Photographer', 'Journalist', 'Veterinarian', 'Graphic Designer', 'Mechanic', 'Marine Biologist', 'Flight Attendant', 'Judge', 'Plumber', 'Dentist', 'Electrician', 'Teacher'] },
+            { id: 'vehicles', name: 'Vehicles & Transport', icon: 'car', words: ['Submarine', 'Helicopter', 'Electric Scooter', 'Double Decker Bus', 'Bullet Train', 'Hot Air Balloon', 'Convertible', 'Hovercraft', 'Jet Ski', 'Monster Truck', 'Sailboat', 'Tractor', 'Ambulance', 'Space Shuttle', 'Gondola', 'Cable Car', 'Unicycle', 'Cruise Ship', 'Cargo Plane', 'Segway'] },
+            { id: 'anime', name: 'Anime Shows', icon: 'tv', words: ['Attack on Titan', 'Naruto', 'One Piece', 'Demon Slayer', 'My Hero Academia', 'Jujutsu Kaisen', 'Dragon Ball Z', 'Death Note', 'Tokyo Ghoul', 'Fullmetal Alchemist', 'Hunter x Hunter', 'Bleach', 'Sword Art Online', 'Chainsaw Man', 'Spy x Family', 'One Punch Man', 'Neon Genesis Evangelion', 'Cowboy Bebop', 'Sailor Moon', 'JoJo\'s Bizarre Adventure'] },
+            { id: 'sitcoms', name: 'Classic Sitcoms', icon: 'tv', words: ['Friends', 'The Office', 'Brooklyn Nine-Nine', 'Parks and Recreation', 'How I Met Your Mother', 'The Big Bang Theory', 'Modern Family', 'Seinfeld', 'Schitt\'s Creek', 'New Girl', 'Abbott Elementary', 'Community', 'That 70s Show', 'Full House', 'Scrubs', 'Fresh Prince of Bel-Air', 'Superstore', 'It\'s Always Sunny in Philadelphia', 'Ted Lasso', 'Arrested Development'] },
+            { id: 'bingetv', name: 'Binge TV Shows', icon: 'tv', words: ['Stranger Things', 'Breaking Bad', 'Game of Thrones', 'Squid Game', 'Wednesday', 'The Last of Us', 'Black Mirror', 'Money Heist', 'Euphoria', 'The Crown', 'Better Call Saul', 'Succession', 'The Boys', 'Bridgerton', 'The Mandalorian', 'Peaky Blinders', 'Ozark', 'The Witcher', 'Yellowstone'] },
+            { id: 'gametitles', name: 'Video Games', icon: 'gamepad-2', words: ['Minecraft', 'Grand Theft Auto V', 'Fortnite', 'The Legend of Zelda', 'Super Mario Bros', 'Call of Duty', 'Valorant', 'League of Legends', 'Overwatch', 'Elden Ring', 'Roblox', 'Cyberpunk 2077', 'God of War', 'Apex Legends', 'Rocket League', 'Among Us', 'Red Dead Redemption 2', 'Fall Guys', 'Terraria', 'Genshin Impact'] },
+            { id: 'popstars', name: 'Global Pop Stars', icon: 'music', words: ['Taylor Swift', 'Beyoncé', 'Drake', 'BTS', 'Billie Eilish', 'The Weeknd', 'Ariana Grande', 'Bruno Mars', 'Ed Sheeran', 'Dua Lipa', 'Rihanna', 'Justin Bieber', 'Harry Styles', 'Olivia Rodrigo', 'Bad Bunny', 'Lady Gaga', 'Katy Perry', 'Post Malone', 'Adele', 'Kanye West'] },
+            { id: 'techbrands', name: 'Tech & Gadgets', icon: 'cpu', words: ['Apple iPhone', 'Tesla Model S', 'PlayStation 5', 'Nintendo Switch', 'ChatGPT', 'Apple Vision Pro', 'Kindle', 'Oculus Quest', 'Dyson Airwrap', 'GoPro', 'MacBook Pro', 'Fitbit', 'Roomba Robot', 'DJI Drone', 'AirPods', 'Steam Deck', 'Samsung Galaxy', 'Xbox Series X', 'Raspberry Pi', 'Smart Ring'] },
+            { id: 'fantasy', name: 'Fantasy & Lore', icon: 'book', words: ['Hogwarts', 'Middle-earth', 'Narnia', 'Percy Jackson', 'Zeus', 'Medusa', 'Kraken', 'Thor', 'Phoenix', 'Excalibur', 'Minotaur', 'Valhalla', 'Wandering Elf', 'Dragon Lord', 'Centaur', 'Anubis', 'Mount Olympus', 'Atlantis', 'Sphinx', 'Cyclops'] }
+        ];
+
+        let gameState = {
+            players: ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
+            imposterCount: 1,
+            hintEnabled: true,
+            chaosModeEnabled: false,
+            selectedCategory: null, 
+            isRandomCategory: false,
+            customTopic: null,
+            
+            // Session specific state
+            currentRound: 1,
+            currentSecretWord: '',
+            currentCategoryName: '',
+            activeEventType: 'STANDARD', 
+            imposterIndices: [], 
+            activePlayerStatus: [], 
+            currentPlayerIndex: 0,
+            firstSpeakerIndex: 0,
+            selectedSuspectIndex: null,
+            
+            // Timer state
+            timerSeconds: 180,
+            timerInterval: null,
+            isTimerRunning: false
+        };
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            renderPlayerNamesList();
+            renderCategoryGrid();
+            lucide.createIcons();
+        });
+
+        // Navigation Helper
+        function showScreen(screenId) {
+            ['screenSetup', 'screenPassPhone', 'screenRevealCard', 'screenDiscussion', 'screenVoting'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function goHome() {
+            clearInterval(gameState.timerInterval);
+            gameState.isTimerRunning = false;
+            showScreen('screenSetup');
+        }
+
+        function updatePlayerCount(delta) {
+            let newCount = gameState.players.length + delta;
+            if (newCount >= 3 && newCount <= 12) {
+                if (delta > 0) {
+                    gameState.players.push(`Player ${newCount}`);
+                } else {
+                    gameState.players.pop();
+                }
+                
+                if (gameState.players.length < 6 && gameState.imposterCount > 1) {
+                    gameState.imposterCount = 1;
+                }
+
+                document.getElementById('playerCountText').textContent = gameState.players.length;
+                document.getElementById('imposterCountText').textContent = gameState.imposterCount;
+                document.getElementById('imposterLimitHint').textContent = gameState.players.length < 6 ? 'Max 1 for under 6 players' : 'Max 2 for 6+ players';
+                
+                renderPlayerNamesList();
+            }
+        }
+
+        function updateImposterCount(delta) {
+            let maxImposters = gameState.players.length >= 6 ? 2 : 1;
+            let newCount = gameState.imposterCount + delta;
+            if (newCount >= 1 && newCount <= maxImposters) {
+                gameState.imposterCount = newCount;
+                document.getElementById('imposterCountText').textContent = gameState.imposterCount;
+            }
+        }
+
+        function togglePlayerNamesList() {
+            const container = document.getElementById('playerNamesContainer');
+            const chevron = document.getElementById('namesChevron');
+            container.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-180');
+        }
+
+        function renderPlayerNamesList() {
+            const container = document.getElementById('playerNamesContainer');
+            container.innerHTML = '';
+            gameState.players.forEach((name, idx) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-1 bg-[#ded8cc] rounded-xl px-2.5 py-1.5 border border-[#c3bdae]';
+                div.innerHTML = `
+                    <span class="text-[10px] font-bold text-[#666156] w-3">${idx + 1}</span>
+                    <input type="text" value="${name}" onchange="updatePlayerName(${idx}, this.value)" class="bg-transparent text-xs font-semibold text-[#121212] w-full focus:outline-none">
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function updatePlayerName(index, newName) {
+            if (newName.trim() !== '') {
+                gameState.players[index] = newName.trim();
+            }
+        }
+
+        function renderCategoryGrid() {
+            const grid = document.getElementById('categoryGrid');
+            grid.innerHTML = '';
+
+            CATEGORIES_DATA.forEach(cat => {
+                const isSelected = !gameState.isRandomCategory && gameState.selectedCategory && gameState.selectedCategory.id === cat.id;
+                const card = document.createElement('button');
+                card.onclick = () => selectCategory(cat);
+                card.className = `p-3 rounded-xl flex items-center space-x-2.5 transition text-left border ${
+                    isSelected 
+                    ? 'bg-[#121212] text-[#ded8cc] border-[#121212] shadow-md' 
+                    : 'bg-[#d3ccbe]/60 border-[#c3bdae] hover:border-[#121212]/40 text-[#121212]'
+                }`;
+
+                card.innerHTML = `
+                    <div class="w-8 h-8 rounded-lg ${isSelected ? 'bg-[#1a1a1a] text-[#ded8cc]' : 'bg-[#ded8cc] text-[#121212]'} flex items-center justify-center shrink-0">
+                        <i data-lucide="${cat.icon || 'folder'}" class="w-4 h-4"></i>
+                    </div>
+                    <div class="truncate">
+                        <span class="block text-xs font-bold truncate">${cat.name}</span>
+                        <span class="text-[10px] ${isSelected ? 'text-[#c3bdae]' : 'text-[#666156]'}">${cat.words.length} items</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            // Custom Topic Button
+            const isCustomSelected = !gameState.isRandomCategory && gameState.selectedCategory && gameState.selectedCategory.id === 'custom';
+            const customBtn = document.createElement('button');
+            customBtn.onclick = openCustomModal;
+            customBtn.className = `p-3 rounded-xl flex items-center space-x-2.5 transition text-left border border-dashed ${
+                isCustomSelected 
+                ? 'bg-[#121212] border-[#121212] text-[#ded8cc]' 
+                : 'bg-[#d3ccbe]/30 border-[#121212]/40 text-[#121212] hover:bg-[#d3ccbe]'
+            }`;
+            customBtn.innerHTML = `
+                <div class="w-8 h-8 rounded-lg ${isCustomSelected ? 'bg-[#1a1a1a] text-[#ded8cc]' : 'bg-[#121212]/10 text-[#121212]'} flex items-center justify-center shrink-0">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                </div>
+                <div class="truncate">
+                    <span class="block text-xs font-bold truncate">${gameState.customTopic ? gameState.customTopic.name : 'Custom Topic'}</span>
+                    <span class="text-[10px] ${isCustomSelected ? 'text-[#c3bdae]' : 'text-[#666156]'}">Import/Export words</span>
+                </div>
+            `;
+            grid.appendChild(customBtn);
+
+            if (!gameState.selectedCategory && !gameState.isRandomCategory && CATEGORIES_DATA.length > 0) {
+                gameState.selectedCategory = CATEGORIES_DATA[0];
+            }
+
+            lucide.createIcons();
+        }
+
+        function selectCategory(cat) {
+            gameState.isRandomCategory = false;
+            gameState.selectedCategory = cat;
+            renderCategoryGrid();
+        }
+
+        function selectRandomCategory() {
+            gameState.isRandomCategory = true;
+            const randIndex = Math.floor(Math.random() * CATEGORIES_DATA.length);
+            gameState.selectedCategory = CATEGORIES_DATA[randIndex];
+            
+            renderCategoryGrid();
+            
+            const notify = document.createElement('div');
+            notify.className = "fixed top-4 left-1/2 -translate-x-1/2 bg-[#121212] text-[#ded8cc] text-xs font-bold px-4 py-2 rounded-full shadow-lg z-50 animate-bounce";
+            notify.textContent = "🎲 Random Mystery Category Chosen!";
+            document.body.appendChild(notify);
+            setTimeout(() => notify.remove(), 2000);
+        }
+
+        function openChaosInfoModal() {
+            document.getElementById('chaosInfoModal').classList.remove('hidden');
+        }
+
+        function closeChaosInfoModal() {
+            document.getElementById('chaosInfoModal').classList.add('hidden');
+        }
+
+        function openCustomModal() {
+            document.getElementById('customTopicModal').classList.remove('hidden');
+        }
+
+        function closeCustomModal() {
+            document.getElementById('customTopicModal').classList.add('hidden');
+        }
+
+        function saveCustomTopic() {
+            const catName = document.getElementById('customCatName').value.trim() || 'Custom Group';
+            const rawText = document.getElementById('customWordsArea').value;
+            const wordsList = rawText.split('\n').map(w => w.trim()).filter(w => w.length > 0);
+
+            if (wordsList.length === 0) {
+                alert('Please enter at least one word or import a .txt file!');
+                return;
+            }
+
+            gameState.customTopic = {
+                id: 'custom',
+                name: catName,
+                icon: 'pen-tool',
+                words: wordsList
+            };
+
+            gameState.isRandomCategory = false;
+            gameState.selectedCategory = gameState.customTopic;
+            closeCustomModal();
+            renderCategoryGrid();
+        }
+
+        function importTxtFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                document.getElementById('customWordsArea').value = content;
+                if (!document.getElementById('customCatName').value) {
+                    document.getElementById('customCatName').value = file.name.replace('.txt', '');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportTxtFile() {
+            const words = document.getElementById('customWordsArea').value;
+            const catName = document.getElementById('customCatName').value || 'imposter_custom_words';
+            
+            if (!words.trim()) {
+                alert('No words to export!');
+                return;
+            }
+
+            const blob = new Blob([words], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${catName.toLowerCase().replace(/\s+/g, '_')}.txt`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function openHowToPlay() {
+            document.getElementById('howToPlayModal').classList.remove('hidden');
+        }
+
+        function closeHowToPlay() {
+            document.getElementById('howToPlayModal').classList.add('hidden');
+        }
+
+        function startGame() {
+            if (!gameState.selectedCategory) {
+                alert('Please select a category first!');
+                return;
+            }
+
+            gameState.hintEnabled = document.getElementById('imposterHintToggle').checked;
+            gameState.chaosModeEnabled = document.getElementById('chaosModeToggle').checked;
+
+            const cat = gameState.selectedCategory;
+            const randomWordIndex = Math.floor(Math.random() * cat.words.length);
+            gameState.currentSecretWord = cat.words[randomWordIndex];
+            gameState.currentCategoryName = cat.name;
+
+            const totalPlayers = gameState.players.length;
+
+            gameState.activeEventType = 'STANDARD';
+            if (gameState.chaosModeEnabled) {
+                const randVal = Math.random();
+                if (randVal < 0.20) {
+                    gameState.activeEventType = 'ALL_IMPOSTERS';
+                } else if (randVal < 0.35) {
+                    gameState.activeEventType = 'ALL_INNOCENTS';
+                }
+            }
+
+            const imposterIndices = new Set();
+
+            if (gameState.activeEventType === 'ALL_IMPOSTERS') {
+                for (let i = 0; i < totalPlayers; i++) {
+                    imposterIndices.add(i);
+                }
+            } else if (gameState.activeEventType === 'ALL_INNOCENTS') {
+                // Imposter list stays empty
+            } else {
+                while (imposterIndices.size < gameState.imposterCount) {
+                    const randIndex = Math.floor(Math.random() * totalPlayers);
+                    imposterIndices.add(randIndex);
+                }
+            }
+            gameState.imposterIndices = Array.from(imposterIndices);
+
+            gameState.activePlayerStatus = new Array(totalPlayers).fill(true);
+            gameState.currentRound = 1;
+            gameState.firstSpeakerIndex = Math.floor(Math.random() * totalPlayers);
+            gameState.currentPlayerIndex = 0;
+
+            setupPassPhoneScreen();
+        }
+
+        function setupPassPhoneScreen() {
+            const playerName = gameState.players[gameState.currentPlayerIndex];
+            document.getElementById('passPlayerName').textContent = playerName;
+            document.getElementById('passPlayerBtnName').textContent = playerName;
+            showScreen('screenPassPhone');
+        }
+
+        function prepareRevealCard() {
+            const playerName = gameState.players[gameState.currentPlayerIndex];
+            document.getElementById('cardPlayerName').textContent = playerName;
+
+            const card = document.getElementById('secretCard');
+            const cardHiddenState = document.getElementById('cardHiddenState');
+            const cardRevealedState = document.getElementById('cardRevealedState');
+            const revealBtnText = document.getElementById('revealBtnText');
+            const revealIcon = document.getElementById('revealIcon');
+            const hideAndPassBtn = document.getElementById('hideAndPassBtn');
+
+            card.className = "w-full glass-card border border-[#c3bdae] rounded-3xl p-6 flex flex-col items-center justify-center min-h-[260px] text-center relative overflow-hidden transition-all duration-500";
+            cardHiddenState.classList.remove('hidden');
+            cardRevealedState.classList.add('hidden');
+            hideAndPassBtn.classList.add('hidden');
+            revealBtnText.textContent = "Show Secret Role";
+            revealIcon.setAttribute('data-lucide', 'eye');
+
+            showScreen('screenRevealCard');
+        }
+
+        function toggleCardReveal() {
+            const cardHiddenState = document.getElementById('cardHiddenState');
+            const cardRevealedState = document.getElementById('cardRevealedState');
+            const revealBtnText = document.getElementById('revealBtnText');
+            const revealIcon = document.getElementById('revealIcon');
+            const hideAndPassBtn = document.getElementById('hideAndPassBtn');
+            const card = document.getElementById('secretCard');
+
+            const isImposter = gameState.imposterIndices.includes(gameState.currentPlayerIndex);
+
+            if (cardRevealedState.classList.contains('hidden')) {
+                cardHiddenState.classList.add('hidden');
+                cardRevealedState.classList.remove('hidden');
+                hideAndPassBtn.classList.remove('hidden');
+                revealBtnText.textContent = "Hide Card";
+                revealIcon.setAttribute('data-lucide', 'eye-off');
+
+                const roleBadge = document.getElementById('roleBadge');
+                const secretRoleText = document.getElementById('secretRoleText');
+                const hintTitleLabel = document.getElementById('hintTitleLabel');
+                const hintValueText = document.getElementById('hintValueText');
+
+                const categoryDisplay = gameState.isRandomCategory ? "❓ Secret / Mystery Category" : gameState.currentCategoryName;
+
+                if (isImposter) {
+                    card.className = "w-full glass-card border-2 border-red-600 rounded-3xl p-6 flex flex-col items-center justify-center min-h-[260px] text-center relative overflow-hidden transition-all duration-500 bg-red-500/10";
+                    roleBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-600 text-white border border-red-700";
+                    roleBadge.textContent = "IMPOSTER";
+
+                    secretRoleText.textContent = "YOU ARE THE IMPOSTER";
+                    secretRoleText.className = "text-xl font-black text-red-600 tracking-wide break-words animate-pulse";
+
+                    if (gameState.hintEnabled) {
+                        hintTitleLabel.textContent = "Imposter Category Hint";
+                        hintValueText.textContent = categoryDisplay;
+                    } else {
+                        hintTitleLabel.textContent = "Imposter Hint";
+                        hintValueText.textContent = "No hint available (Hard Mode)";
+                    }
+                } else {
+                    card.className = "w-full glass-card border-2 border-[#121212] rounded-3xl p-6 flex flex-col items-center justify-center min-h-[260px] text-center relative overflow-hidden transition-all duration-500 bg-[#c3bdae]/30";
+                    roleBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#121212] text-[#ded8cc]";
+                    roleBadge.textContent = "AGENT / INNOCENT";
+
+                    secretRoleText.textContent = gameState.currentSecretWord;
+                    secretRoleText.className = "text-2xl font-black text-[#121212] tracking-wide break-words";
+
+                    hintTitleLabel.textContent = "Category";
+                    hintValueText.textContent = categoryDisplay;
+                }
+            } else {
+                cardHiddenState.classList.remove('hidden');
+                cardRevealedState.classList.add('hidden');
+                revealBtnText.textContent = "Show Secret Role";
+                revealIcon.setAttribute('data-lucide', 'eye');
+                card.className = "w-full glass-card border border-[#c3bdae] rounded-3xl p-6 flex flex-col items-center justify-center min-h-[260px] text-center relative overflow-hidden transition-all duration-500";
+            }
+            lucide.createIcons();
+        }
+
+        function nextPlayerRole() {
+            gameState.currentPlayerIndex++;
+
+            if (gameState.currentPlayerIndex < gameState.players.length) {
+                setupPassPhoneScreen();
+            } else {
+                setupDiscussionPhase();
+            }
+        }
+
+        function setupDiscussionPhase() {
+            document.getElementById('roundBadge').textContent = `Round ${gameState.currentRound}`;
+            
+            let speakerIdx = gameState.firstSpeakerIndex;
+            while (!gameState.activePlayerStatus[speakerIdx]) {
+                speakerIdx = (speakerIdx + 1) % gameState.players.length;
+            }
+            document.getElementById('firstSpeakerName').textContent = gameState.players[speakerIdx];
+            
+            gameState.timerSeconds = 180;
+            updateTimerDisplay();
+            
+            showScreen('screenDiscussion');
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(gameState.timerSeconds / 60);
+            const secs = gameState.timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function toggleTimer() {
+            const icon = document.getElementById('timerControlIcon');
+            
+            if (gameState.isTimerRunning) {
+                clearInterval(gameState.timerInterval);
+                gameState.isTimerRunning = false;
+                icon.setAttribute('data-lucide', 'play');
+            } else {
+                gameState.isTimerRunning = true;
+                icon.setAttribute('data-lucide', 'pause');
+                gameState.timerInterval = setInterval(() => {
+                    if (gameState.timerSeconds > 0) {
+                        gameState.timerSeconds--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(gameState.timerInterval);
+                        gameState.isTimerRunning = false;
+                        icon.setAttribute('data-lucide', 'play');
+                    }
+                }, 1000);
+            }
+            lucide.createIcons();
+        }
+
+        function adjustTimer(seconds) {
+            gameState.timerSeconds = Math.max(0, gameState.timerSeconds + seconds);
+            updateTimerDisplay();
+        }
+
+        function goToVoting() {
+            clearInterval(gameState.timerInterval);
+            gameState.isTimerRunning = false;
+            gameState.selectedSuspectIndex = null;
+
+            renderVotingList();
+
+            document.getElementById('eliminationSummary').classList.add('hidden');
+            document.getElementById('gameOutcomeBanner').classList.add('hidden');
+            document.getElementById('confirmEliminationBtn').classList.remove('hidden');
+            document.getElementById('confirmEliminationBtn').disabled = true;
+            document.getElementById('continueNextRoundBtn').classList.add('hidden');
+
+            showScreen('screenVoting');
+        }
+
+        function renderVotingList() {
+            const votingList = document.getElementById('votingList');
+            votingList.innerHTML = '';
+
+            gameState.players.forEach((player, idx) => {
+                const isAlive = gameState.activePlayerStatus[idx];
+                const btn = document.createElement('button');
+                btn.disabled = !isAlive;
+
+                if (!isAlive) {
+                    btn.className = 'w-full p-3 rounded-xl bg-[#c3bdae]/30 border border-[#c3bdae]/50 flex items-center justify-between opacity-60 cursor-not-allowed';
+                    btn.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <div class="w-7 h-7 rounded-full bg-[#c3bdae] text-[#666156] font-bold text-xs flex items-center justify-center">
+                                ${idx + 1}
+                            </div>
+                            <span class="font-semibold text-sm text-[#666156] line-through">${player}</span>
+                        </div>
+                        <span class="text-[10px] text-[#666156] font-bold uppercase">Eliminated</span>
+                    `;
+                } else {
+                    const isSelected = gameState.selectedSuspectIndex === idx;
+                    btn.onclick = () => selectSuspect(idx);
+                    btn.className = `w-full p-3.5 rounded-xl flex items-center justify-between border transition ${
+                        isSelected 
+                        ? 'bg-[#121212] text-[#ded8cc] border-[#121212]' 
+                        : 'bg-[#d3ccbe] border-[#c3bdae] hover:border-[#121212] text-[#121212]'
+                    }`;
+                    btn.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-full ${isSelected ? 'bg-[#1a1a1a] text-[#ded8cc]' : 'bg-[#ded8cc] text-[#121212]'} font-bold text-xs flex items-center justify-center transition">
+                                ${idx + 1}
+                            </div>
+                            <span class="font-bold text-sm ${isSelected ? 'text-[#ded8cc]' : 'text-[#121212]'}">${player}</span>
+                        </div>
+                        <span class="text-xs ${isSelected ? 'text-[#ded8cc] font-extrabold' : 'text-[#666156]'} uppercase tracking-wider">
+                            ${isSelected ? 'Selected' : 'Vote Out'}
+                        </span>
+                    `;
+                }
+                votingList.appendChild(btn);
+            });
+        }
+
+        function selectSuspect(index) {
+            gameState.selectedSuspectIndex = index;
+            document.getElementById('confirmEliminationBtn').disabled = false;
+            renderVotingList();
+        }
+
+        function confirmElimination() {
+            if (gameState.selectedSuspectIndex === null) return;
+
+            const elimIndex = gameState.selectedSuspectIndex;
+            gameState.activePlayerStatus[elimIndex] = false;
+            const elimName = gameState.players[elimIndex];
+            const isImposter = gameState.imposterIndices.includes(elimIndex);
+
+            const elimSummary = document.getElementById('eliminationSummary');
+            const elimTitle = document.getElementById('elimResultTitle');
+            const elimDetail = document.getElementById('elimResultDetail');
+
+            elimSummary.classList.remove('hidden');
+            
+            if (isImposter) {
+                elimTitle.textContent = `🎯 ${elimName} was eliminated!`;
+                elimTitle.className = "text-lg font-bold text-red-600";
+                elimDetail.textContent = `${elimName} WAS AN IMPOSTER!`;
+            } else {
+                elimTitle.textContent = `🚫 ${elimName} was eliminated!`;
+                elimTitle.className = "text-lg font-bold text-[#121212]";
+                elimDetail.textContent = `${elimName} was Innocent (Agent).`;
+            }
+
+            document.getElementById('confirmEliminationBtn').classList.add('hidden');
+
+            checkGameOutcome();
+        }
+
+        function checkGameOutcome() {
+            let aliveImposters = 0;
+            let aliveInnocents = 0;
+
+            gameState.activePlayerStatus.forEach((isAlive, idx) => {
+                if (isAlive) {
+                    if (gameState.imposterIndices.includes(idx)) {
+                        aliveImposters++;
+                    } else {
+                        aliveInnocents++;
+                    }
+                }
+            });
+
+            const totalAlive = aliveImposters + aliveInnocents;
+            const outcomeBanner = document.getElementById('gameOutcomeBanner');
+            const outcomeText = document.getElementById('gameOutcomeText');
+            const continueBtn = document.getElementById('continueNextRoundBtn');
+
+            // Innocents Win: All imposters eliminated
+            if (aliveImposters === 0) {
+                outcomeBanner.classList.remove('hidden');
+                outcomeText.textContent = "🏆 INNOCENTS WIN! ALL IMPOSTERS ELIMINATED!";
+                outcomeText.className = "text-base font-black text-emerald-700 uppercase tracking-wide";
+                triggerConfetti();
+                revealFinalGameDetails();
+                return;
+            }
+
+            // Imposters Win: Imposters equal or outnumber innocents
+            if (aliveImposters >= aliveInnocents) {
+                outcomeBanner.classList.remove('hidden');
+                outcomeText.textContent = "💀 IMPOSTERS WIN! THEY HAVE OVERPOWERED THE GROUP!";
+                outcomeText.className = "text-base font-black text-red-600 uppercase tracking-wide";
+                revealFinalGameDetails();
+                return;
+            }
+
+            // Game End: <= 2 players remain
+            if (totalAlive <= 2) {
+                outcomeBanner.classList.remove('hidden');
+                outcomeText.textContent = "⚖️ GAME OVER! TOO FEW PLAYERS REMAINING.";
+                outcomeText.className = "text-base font-black text-amber-700 uppercase tracking-wide";
+                revealFinalGameDetails();
+                return;
+            }
+
+            // Continue
+            continueBtn.classList.remove('hidden');
+        }
+
+        function continueToNextRound() {
+            gameState.currentRound++;
+            gameState.firstSpeakerIndex = (gameState.firstSpeakerIndex + 1) % gameState.players.length;
+            setupDiscussionPhase();
+        }
+
+        function revealAndEndGame() {
+            const outcomeBanner = document.getElementById('gameOutcomeBanner');
+            const outcomeText = document.getElementById('gameOutcomeText');
+            
+            document.getElementById('eliminationSummary').classList.remove('hidden');
+            outcomeBanner.classList.remove('hidden');
+            outcomeText.textContent = "📢 GAME REVEAL";
+            outcomeText.className = "text-base font-black text-[#121212] uppercase tracking-wide";
+
+            revealFinalGameDetails();
+        }
+
+        function revealFinalGameDetails() {
+            document.getElementById('finalSecretWord').textContent = gameState.currentSecretWord;
+            document.getElementById('finalCategoryName').textContent = `Category: ${gameState.currentCategoryName}`;
+            
+            const eventElem = document.getElementById('finalEventName');
+            if (gameState.activeEventType === 'ALL_IMPOSTERS') {
+                eventElem.textContent = "🔥 Chaos Event Revealed: EVERYONE WAS AN IMPOSTER!";
+            } else if (gameState.activeEventType === 'ALL_INNOCENTS') {
+                eventElem.textContent = "✨ Chaos Event Revealed: EVERYONE WAS INNOCENT!";
+            } else {
+                eventElem.textContent = "";
+            }
+        }
+
+        function triggerConfetti() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+    </script>
+</body>
+</html>
