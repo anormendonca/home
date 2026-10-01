@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+/* Core Base Styles */
+body {
+    background-color: #ded8cc;
+    color: #121212;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Glass Panels & Cards */
+.glass-panel,
+.glass-card {
+    background: #d3ccbe;
+    border: 1px solid #c3bdae;
+}
+
+.dark-card {
+    background: #1a1a1a;
+    color: #ded8cc;
+}
+
+/* Custom Neon Accent Borders */
+.neon-border-purple {
+    border-color: #121212;
+    box-shadow: 0 4px 12px rgba(18, 18, 18, 0.08);
+}
+
+.neon-border-red {
+    border-color: #dc2626;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+}
+
+/* Scrollbar Hide Utilities */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
