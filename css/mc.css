@@ -1,8 +1,6 @@
 /* ==========================================================================
-   UNIFIED STYLESHEET (css/mc.css)
+   1. GLOBAL VARIABLES & RESET
    ========================================================================== */
-
-/* --- ROOT VARIABLES --- */
 :root {
     --bg-dark: #0a0b0d;
     --surface-card: #121418;
@@ -31,7 +29,6 @@
     --warning: #ffb142;
 }
 
-/* --- BASE & RESET --- */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -50,8 +47,8 @@ body {
     position: relative;
 }
 
-/* Ambient Glow for Pages */
-body::before {
+/* Ambient Lighting Background (Hosting) */
+body.hosting-page::before {
     content: '';
     position: absolute;
     top: 0;
@@ -63,7 +60,10 @@ body::before {
     z-index: 0;
 }
 
-/* --- GLOBAL OVERLAYS & NOTIFICATIONS --- */
+/* ==========================================================================
+   2. OVERLAYS, TOASTS & ANIMATIONS
+   ========================================================================== */
+/* Noise Grain Overlay (Fixed: Pure Base64 Grayscale Matrix Encoding) */
 .grain-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -71,9 +71,33 @@ body::before {
     pointer-events: none;
     z-index: 99;
     opacity: 0.035;
-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter%29'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44IiBudW1PY3RhdmVzPSIzIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAuMzMgMC4zMyAwLjMzIDAgMCAgMC4zMyAwLjMzIDAuMzMgMCAwICAwLjMzIDAuMzMgMC4zMyAwIDAgIDAgMCAwIDEgMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNuKSIvPjwvc3ZnPg==");
 }
 
+/* Particles & Pop Flash (Totem) */
+#popCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.pop-flash {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle, rgba(251, 197, 49, 0.45) 0%, rgba(76, 209, 55, 0.25) 50%, transparent 100%);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 998;
+    transition: opacity 0.15s ease-out;
+}
+
+.pop-flash.active {
+    opacity: 1;
+}
+
+/* Toast Notification */
 .toast {
     position: fixed;
     bottom: 30px;
@@ -100,7 +124,43 @@ background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w
     transform: translateY(0);
 }
 
-/* --- NAVIGATION & HERO SECTION --- */
+/* Spinner & State Messages */
+.state-msg {
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.error-msg {
+    color: var(--danger);
+}
+
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: var(--text-main);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   3. NAVIGATION & HERO HEADERS
+   ========================================================================== */
 .hero-section {
     padding: 16px;
     width: 100%;
@@ -113,45 +173,44 @@ background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://w
 .hero-card {
     position: relative;
     width: 100%;
-    min-height: 380px;
+    min-height: 280px;
     border-radius: 28px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 24px 40px 40px 40px;
+    padding: 24px 40px 32px 40px;
     border: 1px solid var(--border-color);
-    background: var(--surface-card);
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
 }
 
-/* Hero Background Themes */
-body:has(.totem-studio-grid) .hero-card {
-    min-height: 280px;
-    padding-bottom: 32px;
+/* Page-Specific Hero Backgrounds */
+.totem-page .hero-card {
     background: 
         linear-gradient(180deg, rgba(10, 11, 13, 0.4) 0%, rgba(10, 11, 13, 0.95) 100%),
         radial-gradient(circle at 75% 20%, rgba(251, 197, 49, 0.25) 0%, rgba(20, 15, 25, 0.95) 65%),
         url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop') center/cover no-repeat;
 }
 
-body:has(.profile-grid) .hero-card {
+.skin-page .hero-card {
     min-height: 440px;
+    padding-bottom: 40px;
     background: 
         linear-gradient(180deg, rgba(10, 11, 13, 0.35) 0%, rgba(10, 11, 13, 0.92) 100%),
         radial-gradient(circle at 75% 25%, rgba(210, 120, 50, 0.28) 0%, rgba(20, 15, 25, 0.92) 65%),
         url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop') center/cover no-repeat;
 }
 
-body:has(.controls-container) .hero-card,
-body:has(.grid) .hero-card {
+.hosting-page .hero-card {
     min-height: 380px;
+    padding-bottom: 40px;
     background: 
         radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.25) 0%, rgba(10, 11, 13, 0.95) 65%),
         radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.2) 0%, rgba(10, 11, 13, 0.95) 70%),
         var(--surface-card);
 }
 
+/* Floating Navigation */
 .nav-wrapper {
     width: 100%;
     display: flex;
@@ -171,6 +230,11 @@ body:has(.grid) .hero-card {
     border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+.hosting-page .nav-pill {
+    gap: 28px;
+    background: rgba(18, 20, 24, 0.6);
+}
+
 .nav-pill a {
     color: var(--text-main);
     text-decoration: none;
@@ -185,36 +249,43 @@ body:has(.grid) .hero-card {
     transform: translateY(-1px);
 }
 
-.hero-title-area, .search-hero-content {
-    max-width: 720px;
-    margin: 30px auto 0;
+/* Hero Titles & Texts */
+.hero-title-area {
     text-align: center;
-    z-index: 5;
-    width: 100%;
+    margin-top: 20px;
 }
 
 .brand-heading {
     font-family: var(--font-display);
-    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-size: clamp(2.2rem, 4.5vw, 3.6rem);
     font-weight: 700;
-    line-height: 1.1;
     letter-spacing: -0.04em;
     color: var(--text-main);
-    margin-bottom: 14px;
+    margin-bottom: 8px;
+    line-height: 1.1;
 }
 
-.brand-heading span {
+.totem-page .brand-heading span {
     color: var(--accent-gold);
 }
 
-body:has(.profile-grid) .brand-heading span {
-    font-weight: 300;
-    margin-left: 2px;
-    color: var(--text-main);
+.skin-page .brand-heading {
+    font-size: clamp(2.2rem, 5.5vw, 4rem);
+    line-height: 1;
+    margin-bottom: 14px;
 }
 
-body:has(.controls-container) .brand-heading span,
-body:has(.grid) .brand-heading span {
+.skin-page .brand-heading span {
+    font-weight: 300;
+    margin-left: 2px;
+}
+
+.hosting-page .brand-heading {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    margin-bottom: 14px;
+}
+
+.hosting-page .brand-heading span {
     color: var(--accent-violet);
     font-weight: 300;
 }
@@ -223,10 +294,28 @@ body:has(.grid) .brand-heading span {
     color: var(--text-muted);
     font-size: 0.98rem;
     font-weight: 300;
+}
+
+.skin-page .hero-subtext {
     margin-bottom: 24px;
 }
 
-/* --- SEARCH & PRESETS COMPONENTS --- */
+.hosting-page .hero-subtext {
+    font-size: 1rem;
+    margin-bottom: 28px;
+}
+
+/* ==========================================================================
+   4. SEARCH COMPONENTS & PRESETS
+   ========================================================================== */
+.search-hero-content {
+    max-width: 720px;
+    margin: 30px auto 0;
+    text-align: center;
+    z-index: 5;
+    width: 100%;
+}
+
 .search-box {
     position: relative;
     width: 100%;
@@ -250,15 +339,24 @@ body:has(.grid) .brand-heading span {
     transition: all 0.3s ease;
 }
 
+.hosting-page .search-box input {
+    padding: 16px 24px;
+    padding-right: 50px;
+    font-size: 0.95rem;
+    background: rgba(18, 20, 24, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
 .search-box input:focus {
     border-color: rgba(255, 255, 255, 0.4);
     background: rgba(18, 20, 24, 0.88);
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-body:has(.controls-container) .search-box input:focus,
-body:has(.grid) .search-box input:focus {
+.hosting-page .search-box input:focus {
     border-color: var(--accent-violet);
+    background: rgba(18, 20, 24, 0.9);
     box-shadow: 0 10px 30px rgba(139, 92, 246, 0.25);
 }
 
@@ -328,35 +426,9 @@ body:has(.grid) .search-box input:focus {
     transform: translateY(-1px);
 }
 
-.state-msg {
-    text-align: center;
-    font-size: 0.95rem;
-    color: var(--text-muted);
-    margin-top: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.error-msg {
-    color: var(--danger);
-}
-
-.spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid rgba(255,255,255,0.2);
-    border-top-color: var(--text-main);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* --- LAYOUT CONTAINERS --- */
+/* ==========================================================================
+   5. COMMON LAYOUT & ACTION BUTTONS
+   ========================================================================== */
 .content-container {
     max-width: 1380px;
     margin: 0 auto;
@@ -367,45 +439,89 @@ body:has(.grid) .search-box input:focus {
     z-index: 1;
 }
 
+.skin-page .content-container {
+    max-width: 1280px;
+    padding: 40px 20px 60px;
+}
+
+.hosting-page .content-container {
+    max-width: 1280px;
+    margin: 28px auto 60px;
+    padding: 0 20px;
+}
+
 .container {
     display: none;
     animation: fadeIn 0.4s ease forwards;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+.action-btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
 }
 
-/* --- TOTEM STUDIO SECTION (mctotem.html) --- */
-#popCanvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    pointer-events: none;
-    z-index: 999;
+.skin-page .action-btn-group {
+    gap: 12px;
+    margin-top: 20px;
 }
 
-.pop-flash {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: radial-gradient(circle, rgba(251, 197, 49, 0.45) 0%, rgba(76, 209, 55, 0.25) 50%, transparent 100%);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 998;
-    transition: opacity 0.15s ease-out;
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--accent-pill);
+    color: var(--accent-pill-text);
+    text-decoration: none;
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+    width: 100%;
 }
 
-.pop-flash.active {
-    opacity: 1;
+.skin-page .action-btn {
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
 }
 
+.action-btn.outline {
+    background: transparent;
+    color: var(--text-main);
+    border-color: var(--border-color);
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.skin-page .action-btn:hover {
+    opacity: 0.95;
+    box-shadow: none;
+}
+
+.action-btn.outline:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ==========================================================================
+   6. TOTEM STUDIO COMPONENTS
+   ========================================================================== */
 .totem-studio-grid {
     display: grid;
     grid-template-columns: 380px 1fr;
     gap: 28px;
 }
 
+/* Left Stage & Preview */
 .preview-card {
     background: var(--surface-card);
     border: 1px solid var(--border-color);
@@ -497,47 +613,11 @@ canvas#totemDisplayCanvas:hover {
     background: linear-gradient(135deg, #ffd343, #fbc531);
 }
 
-.action-btn-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
+.pop-trigger-btn:active {
+    transform: translateY(1px);
 }
 
-.action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background: var(--accent-pill);
-    color: var(--accent-pill-text);
-    text-decoration: none;
-    padding: 12px 20px;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 0.88rem;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
-    cursor: pointer;
-    width: 100%;
-}
-
-.action-btn.outline {
-    background: transparent;
-    color: var(--text-main);
-    border-color: var(--border-color);
-}
-
-.action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-}
-
-.action-btn.outline:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.05);
-}
-
+/* Right Studio Panel */
 .studio-card {
     background: var(--surface-card);
     border: 1px solid var(--border-color);
@@ -592,6 +672,7 @@ canvas#totemDisplayCanvas:hover {
     display: block;
 }
 
+/* Presets Tab */
 .preset-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -631,6 +712,7 @@ canvas#totemDisplayCanvas:hover {
     text-align: center;
 }
 
+/* Pixel Editor Tab */
 .editor-workspace {
     display: flex;
     gap: 28px;
@@ -740,6 +822,7 @@ canvas#editorGridCanvas {
     padding: 2px;
 }
 
+/* Skin Converter & Pack Settings Tab */
 .skin-input-box {
     display: flex;
     gap: 12px;
@@ -804,13 +887,16 @@ canvas#editorGridCanvas {
     font-family: var(--font-body);
 }
 
-/* --- SKIN SEARCH SECTION (mcskin.html) --- */
+/* ==========================================================================
+   7. SKIN & HEAD LOOKUP COMPONENTS
+   ========================================================================== */
 .profile-grid {
     display: grid;
     grid-template-columns: 360px 1fr;
     gap: 28px;
 }
 
+/* Viewport Card */
 .viewport-card {
     background: var(--surface-card);
     border: 1px solid var(--border-color);
@@ -877,6 +963,7 @@ canvas#editorGridCanvas {
     transform: translateY(-4px) scale(1.02);
 }
 
+/* Profile Data & Gallery */
 .profile-data-wrapper {
     display: flex;
     flex-direction: column;
@@ -1043,7 +1130,9 @@ canvas#editorGridCanvas {
     color: var(--bg-dark);
 }
 
-/* --- HOSTING INDEX SECTION (hosting.html) --- */
+/* ==========================================================================
+   8. HOSTING INDEX COMPONENTS
+   ========================================================================== */
 .controls-container {
     max-width: 1280px;
     margin: 32px auto 0;
@@ -1241,7 +1330,9 @@ canvas#editorGridCanvas {
     font-size: 1rem;
 }
 
-/* --- FOOTER --- */
+/* ==========================================================================
+   9. FOOTER
+   ========================================================================== */
 footer {
     border-top: 1px solid var(--border-color);
     padding: 30px 20px;
@@ -1249,6 +1340,11 @@ footer {
     margin-top: auto;
     position: relative;
     z-index: 1;
+}
+
+.skin-page footer,
+.hosting-page footer {
+    padding: 40px 20px;
 }
 
 .footer-inner {
@@ -1282,14 +1378,20 @@ footer {
     font-size: 0.85rem;
 }
 
-/* --- RESPONSIVE DESIGN --- */
+/* ==========================================================================
+   10. RESPONSIVE MEDIA QUERIES
+   ========================================================================== */
 @media (max-width: 900px) {
     .totem-studio-grid,
     .profile-grid {
         grid-template-columns: 1fr;
     }
-
+    
     .hero-card {
+        padding: 20px;
+    }
+
+    .skin-page .hero-card {
         padding: 20px 20px 30px 20px;
         min-height: auto;
     }
@@ -1300,7 +1402,7 @@ footer {
         font-size: 0.85rem;
     }
 
-    .username-header h1 {
+    .skin-page .username-header h1 {
         font-size: 1.8rem;
     }
 }
