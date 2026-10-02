@@ -919,7 +919,7 @@
         }
     }
 
-    // --- STREAMING_CHUNK:Building Totem Pop Particle Physics Engine... ---
+    // --- FIX 1: TOTEM POP ANIMATION ENGINE (PARTICLES + TOTEM FLOAT FX) ---
     function triggerTotemPop() {
         playTotemPopSound();
 
@@ -928,7 +928,7 @@
         flash.classList.add('active');
         setTimeout(() => flash.classList.remove('active'), 200);
 
-        // Particle explosion
+        // Canvas Overlay Setup
         const popCanvas = document.getElementById('popCanvas');
         popCanvas.width = window.innerWidth;
         popCanvas.height = window.innerHeight;
@@ -937,12 +937,13 @@
         const particles = [];
         const colors = ['#fbc531', '#4cd137', '#ffffff', '#ffd700', '#00ff7f'];
 
-        for (let i = 0; i < 70; i++) {
+        // Particle Burst
+        for (let i = 0; i < 85; i++) {
             particles.push({
                 x: window.innerWidth / 2,
-                y: window.innerHeight / 2,
-                vx: (Math.random() - 0.5) * 22,
-                vy: (Math.random() - 0.7) * 22,
+                y: window.innerHeight / 2 - 20,
+                vx: (Math.random() - 0.5) * 26,
+                vy: (Math.random() - 0.7) * 26,
                 size: Math.random() * 8 + 4,
                 color: colors[Math.floor(Math.random() * colors.length)],
                 alpha: 1,
@@ -950,16 +951,22 @@
             });
         }
 
-        function animateParticles() {
+        const startTime = performance.now();
+        const totalDuration = 1200; // 1.2 seconds animation
+
+        function animatePop(now) {
+            const elapsed = now - startTime;
             pCtx.clearRect(0, 0, popCanvas.width, popCanvas.height);
+
             let active = false;
 
+            // 1. Draw Burst Particles
             particles.forEach(p => {
                 if (p.alpha > 0) {
                     active = true;
                     p.x += p.vx;
                     p.y += p.vy;
-                    p.vy += 0.4; // Gravity
+                    p.vy += 0.45; // Gravity
                     p.alpha -= p.decay;
 
                     pCtx.globalAlpha = Math.max(0, p.alpha);
@@ -968,33 +975,81 @@
                 }
             });
 
+            // 2. Draw Totem Image Pop in Screen Center
+            if (elapsed < totalDuration) {
+                active = true;
+                const progress = elapsed / totalDuration;
+
+                let scale, alpha, rotate;
+                if (progress < 0.25) {
+                    // Rapid scale expand
+                    const t = progress / 0.25;
+                    scale = 0.3 + t * 1.5;
+                    alpha = Math.min(1, t * 1.5);
+                    rotate = (1 - t) * -0.15;
+                } else if (progress < 0.7) {
+                    // Floating wobble
+                    const t = (progress - 0.25) / 0.45;
+                    scale = 1.8 - Math.sin(t * Math.PI * 2) * 0.08;
+                    alpha = 1;
+                    rotate = Math.sin(t * Math.PI * 3) * 0.06;
+                } else {
+                    // Fade out
+                    const t = (progress - 0.7) / 0.3;
+                    scale = 1.8 + t * 0.3;
+                    alpha = 1 - t;
+                    rotate = 0;
+                }
+
+                const centerX = popCanvas.width / 2;
+                const centerY = popCanvas.height / 2 - 20;
+                const baseSize = 160;
+                const drawW = baseSize * scale;
+                const drawH = baseSize * scale;
+
+                pCtx.save();
+                pCtx.globalAlpha = Math.max(0, alpha);
+                pCtx.translate(centerX, centerY);
+                pCtx.rotate(rotate);
+
+                // Radial golden aura glow
+                const radialGlow = pCtx.createRadialGradient(0, 0, 10, 0, 0, drawW * 0.85);
+                radialGlow.addColorStop(0, 'rgba(251, 197, 49, 0.65)');
+                radialGlow.addColorStop(0.5, 'rgba(76, 209, 55, 0.3)');
+                radialGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                pCtx.fillStyle = radialGlow;
+                pCtx.beginPath();
+                pCtx.arc(0, 0, drawW * 0.85, 0, Math.PI * 2);
+                pCtx.fill();
+
+                // Crisp Pixel Totem rendering
+                pCtx.imageSmoothingEnabled = false;
+                pCtx.drawImage(mainCanvas, -drawW / 2, -drawH / 2, drawW, drawH);
+                pCtx.restore();
+            }
+
             if (active) {
-                requestAnimationFrame(animateParticles);
+                requestAnimationFrame(animatePop);
             } else {
                 pCtx.clearRect(0, 0, popCanvas.width, popCanvas.height);
             }
         }
 
-        animateParticles();
+        requestAnimationFrame(animatePop);
         showToast("✨ Totem Pop Activated!");
     }
 
-    // --- STREAMING_CHUNK:Initializing 16x16 Presets Engine... ---
+    // --- PRESETS ENGINE ---
     const PRESETS = {
         gold: {
             name: "Classic Gold",
             draw: (ctx) => {
                 ctx.clearRect(0, 0, 16, 16);
-                // Wings & Base
                 ctx.fillStyle = "#e1b12c"; ctx.fillRect(2, 6, 12, 3);
                 ctx.fillStyle = "#fbc531"; ctx.fillRect(3, 5, 10, 8);
-                // Head
                 ctx.fillStyle = "#ffd343"; ctx.fillRect(5, 2, 6, 4);
-                // Eyes (Emerald Green)
                 ctx.fillStyle = "#4cd137"; ctx.fillRect(6, 3, 1, 1); ctx.fillRect(9, 3, 1, 1);
-                // Nose/Center Gem
                 ctx.fillStyle = "#e1b12c"; ctx.fillRect(7, 4, 2, 2);
-                // Bottom Body
                 ctx.fillStyle = "#c2910c"; ctx.fillRect(6, 11, 4, 3);
             }
         },
@@ -1005,7 +1060,6 @@
                 ctx.fillStyle = "#3a3b3c"; ctx.fillRect(2, 6, 12, 3);
                 ctx.fillStyle = "#2d2d2e"; ctx.fillRect(3, 5, 10, 8);
                 ctx.fillStyle = "#4f4f51"; ctx.fillRect(5, 2, 6, 4);
-                // Glowing Crimson Eyes
                 ctx.fillStyle = "#ff3838"; ctx.fillRect(6, 3, 1, 1); ctx.fillRect(9, 3, 1, 1);
                 ctx.fillStyle = "#e84118"; ctx.fillRect(7, 4, 2, 2);
                 ctx.fillStyle = "#1e1e1e"; ctx.fillRect(6, 11, 4, 3);
@@ -1028,7 +1082,6 @@
                 ctx.clearRect(0, 0, 16, 16);
                 ctx.fillStyle = "#44bd32"; ctx.fillRect(2, 5, 12, 9);
                 ctx.fillStyle = "#4cd137"; ctx.fillRect(4, 2, 8, 6);
-                // Creeper Face
                 ctx.fillStyle = "#000000";
                 ctx.fillRect(5, 3, 2, 2); ctx.fillRect(9, 3, 2, 2);
                 ctx.fillRect(7, 5, 2, 2); ctx.fillRect(6, 6, 4, 2);
@@ -1054,7 +1107,6 @@
         }
     };
 
-    // --- STREAMING_CHUNK:Implementing 16x16 Pixel Editor Engine with Drawing Tools... ---
     window.onload = function() {
         renderPresetGrid();
         renderPalette();
@@ -1162,43 +1214,84 @@
         syncEditorToMain();
     }
 
-    // --- STREAMING_CHUNK:Converting Minecraft player skin into Totem... ---
+    // --- FIX 2 & 3: MULTI-PROVIDER SKIN FETCH & LEGACY 64x32 ARM SUPPORT ---
+    async function fetchSkinImage(username) {
+        const providers = [
+            u => `https://minotar.net/skin/${encodeURIComponent(u)}`,
+            u => `https://crafthead.net/skin/${encodeURIComponent(u)}`,
+            u => `https://mc-heads.net/skin/${encodeURIComponent(u)}`,
+            u => `https://api.mineatar.io/skin/${encodeURIComponent(u)}`
+        ];
+
+        for (let i = 0; i < providers.length; i++) {
+            try {
+                const img = await new Promise((resolve, reject) => {
+                    const image = new Image();
+                    image.crossOrigin = "Anonymous";
+                    image.onload = () => resolve(image);
+                    image.onerror = () => reject(new Error("Failed to load skin image"));
+                    image.src = providers[i](username);
+                });
+
+                if (img.width >= 64 && img.height >= 32) {
+                    return img;
+                }
+            } catch (e) {
+                console.warn(`Skin provider ${i} failed for ${username}, trying next...`);
+            }
+        }
+        throw new Error("Unable to fetch skin from any endpoint");
+    }
+
     async function convertSkinToTotem() {
         const input = document.getElementById('skinInput').value.trim();
         if (!input) return;
 
         showToast(`Fetching skin for ${input}...`);
 
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.src = `https://mc-heads.net/skin/${encodeURIComponent(input)}`;
+        try {
+            const img = await fetchSkinImage(input);
+            const isLegacy = img.height < 64; // e.g. 64x32 legacy skins like Notch
 
-        img.onload = function() {
             mainCtx.clearRect(0, 0, 16, 16);
             mainCtx.imageSmoothingEnabled = false;
 
-            // Head (8x8) -> (4, 1)
+            // 1. Head (8x8) -> x=4, y=1
             mainCtx.drawImage(img, 8, 8, 8, 8, 4, 1, 8, 8);
-            mainCtx.drawImage(img, 40, 8, 8, 8, 4, 1, 8, 8); // Hat
+            mainCtx.drawImage(img, 40, 8, 8, 8, 4, 1, 8, 8); // Hat Overlay
 
-            // Body (6x5) -> (5, 9)
+            // 2. Body Base (6x5) -> x=5, y=9
             mainCtx.drawImage(img, 21, 20, 6, 5, 5, 9, 6, 5);
+            if (!isLegacy) {
+                mainCtx.drawImage(img, 21, 36, 6, 5, 5, 9, 6, 5); // Jacket Overlay
+            }
 
-            // Arms (3x4)
-            mainCtx.drawImage(img, 36, 52, 3, 4, 2, 9, 3, 4);
-            mainCtx.drawImage(img, 44, 20, 3, 4, 11, 9, 3, 4);
+            // 3. Left Arm (Viewer's Left, MC Right Arm: x=44, y=20) -> x=2, y=9
+            mainCtx.drawImage(img, 44, 20, 3, 4, 2, 9, 3, 4);
+            if (!isLegacy) {
+                mainCtx.drawImage(img, 44, 36, 3, 4, 2, 9, 3, 4); // Sleeve Overlay
+            }
 
-            // Sync to editor
+            // 4. Right Arm (Viewer's Right, MC Left Arm) -> x=11, y=9
+            if (!isLegacy) {
+                mainCtx.drawImage(img, 36, 52, 3, 4, 11, 9, 3, 4);
+                mainCtx.drawImage(img, 52, 52, 3, 4, 11, 9, 3, 4); // Sleeve Overlay
+            } else {
+                // Legacy 64x32 skin (like Notch): sample Right Arm coordinates to prevent chopped-off arms
+                mainCtx.drawImage(img, 44, 20, 3, 4, 11, 9, 3, 4);
+            }
+
+            // Sync to editor canvas
             editorCtx.clearRect(0, 0, 16, 16);
+            editorCtx.imageSmoothingEnabled = false;
             editorCtx.drawImage(mainCanvas, 0, 0);
 
             currentTotemName = `${input}'s Totem`;
             showToast(`Converted ${input}'s skin to Totem!`);
-        };
-
-        img.onerror = function() {
-            showToast("Failed to fetch skin. Check username.");
-        };
+        } catch (err) {
+            showToast(`Failed to load skin for "${input}".`);
+            console.error(err);
+        }
     }
 
     // --- UI CONTROLS ---
@@ -1223,7 +1316,7 @@
         setTimeout(() => t.classList.remove('show'), 2500);
     }
 
-    // --- STREAMING_CHUNK:Implementing Java & Bedrock Resource Pack Downloads using JSZip... ---
+    // --- PACK GENERATION & DOWNLOAD ENGINE ---
     async function downloadJavaPack() {
         showToast("Generating Java Resource Pack...");
         const zip = new JSZip();
